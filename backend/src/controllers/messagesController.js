@@ -7,7 +7,7 @@ const { notify } = require('../services/notificationService');
 const convQuery = (userId) => `
   SELECT c.id, c.type, c.name, c.avatar_url, c.description, c.last_message_at,
     cm.muted_until, cm.last_read_message_id, cm.role,
-    (SELECT COUNT(*) FROM messages m WHERE m.conversation_id=c.id AND m.is_deleted=0
+    (SELECT COUNT(*) FROM messages m WHERE m.conversation_id=c.id AND m.is_deleted=FALSE
       AND m.sender_id!=? AND (cm.last_read_message_id IS NULL OR m.id > cm.last_read_message_id)) AS unread_count,
     lm.content AS lm_content, lm.type AS lm_type, lm.sender_id AS lm_sender,
     lm.created_at AS lm_at, lmu.display_name AS lm_sender_name,
@@ -17,7 +17,7 @@ const convQuery = (userId) => `
     ou.status_text AS other_status_text
   FROM conversations c
   JOIN conversation_members cm ON c.id=cm.conversation_id AND cm.user_id=? AND cm.left_at IS NULL
-  LEFT JOIN messages lm ON c.last_message_id=lm.id AND lm.is_deleted=0
+  LEFT JOIN messages lm ON c.last_message_id=lm.id AND lm.is_deleted=FALSE
   LEFT JOIN users lmu ON lm.sender_id=lmu.id
   LEFT JOIN conversation_members cm2 ON c.id=cm2.conversation_id AND cm2.user_id!=? AND c.type='direct' AND cm2.left_at IS NULL
   LEFT JOIN users ou ON cm2.user_id=ou.id AND c.type='direct'
@@ -110,7 +110,7 @@ exports.getMessages = async (req, res) => {
       JOIN users u ON m.sender_id=u.id
       LEFT JOIN messages rm ON m.reply_to_id=rm.id
       LEFT JOIN users rmu ON rm.sender_id=rmu.id
-      WHERE m.conversation_id=? AND m.is_deleted=0
+      WHERE m.conversation_id=? AND m.is_deleted=FALSE
     `;
     const params = [id];
     if (before_id) { sql += ' AND m.id < ?'; params.push(before_id); }
@@ -217,8 +217,8 @@ exports.deleteMessage = async (req, res) => {
     const { for_all = false } = req.body;
     const msg = await db.queryOne('SELECT * FROM messages WHERE id=? AND sender_id=?', [req.params.msgId, req.userId]);
     if (!msg) return res.status(404).json({ success: false, message: 'Not found' });
-    if (for_all) await db.query('UPDATE messages SET is_deleted=1, deleted_for_all=1, content=NULL, media_url=NULL WHERE id=?', [req.params.msgId]);
-    else await db.query('UPDATE messages SET is_deleted=1 WHERE id=?', [req.params.msgId]);
+    if (for_all) await db.query('UPDATE messages SET is_deleted=TRUE, deleted_for_all=1, content=NULL, media_url=NULL WHERE id=?', [req.params.msgId]);
+    else await db.query('UPDATE messages SET is_deleted=TRUE WHERE id=?', [req.params.msgId]);
     if (req.io) req.io.to(`conv_${msg.conversation_id}`).emit('message_deleted', { message_id: req.params.msgId, for_all, conversation_id: msg.conversation_id });
     res.json({ success: true });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
@@ -228,9 +228,9 @@ exports.deleteMessage = async (req, res) => {
 exports.editMessage = async (req, res) => {
   try {
     const { content } = req.body;
-    const msg = await db.queryOne('SELECT * FROM messages WHERE id=? AND sender_id=? AND type="text"', [req.params.msgId, req.userId]);
+    const msg = await db.queryOne('SELECT * FROM messages WHERE id=? AND sender_id=? AND type=\'text\'', [req.params.msgId, req.userId]);
     if (!msg) return res.status(404).json({ success: false, message: 'Not found' });
-    await db.query('UPDATE messages SET content=?, is_edited=1 WHERE id=?', [content, req.params.msgId]);
+    await db.query('UPDATE messages SET content=?, is_edited=TRUE WHERE id=?', [content, req.params.msgId]);
     if (req.io) req.io.to(`conv_${msg.conversation_id}`).emit('message_edited', { message_id: req.params.msgId, content, conversation_id: msg.conversation_id });
     res.json({ success: true });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
@@ -264,10 +264,10 @@ exports.getMedia = async (req, res) => {
   try {
     const { type } = req.query;
     let typeCond = '';
-    if (type === 'media') typeCond = 'AND m.type IN ("image","video")';
-    else if (type === 'files') typeCond = 'AND m.type = "file"';
-    else if (type === 'audio') typeCond = 'AND m.type IN ("audio","voice_note")';
-    const msgs = await db.query(`SELECT m.* FROM messages m WHERE m.conversation_id=? AND m.is_deleted=0 ${typeCond} ORDER BY m.created_at DESC LIMIT 200`, [req.params.id]);
+    if (type === 'media') typeCond = "AND m.type IN ('image','video')";
+    else if (type === 'files') typeCond = "AND m.type = 'file'";
+    else if (type === 'audio') typeCond = "AND m.type IN ('audio','voice_note')";
+    const msgs = await db.query(`SELECT m.* FROM messages m WHERE m.conversation_id=? AND m.is_deleted=FALSE ${typeCond} ORDER BY m.created_at DESC LIMIT 200`, [req.params.id]);
     res.json({ success: true, messages: msgs });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };

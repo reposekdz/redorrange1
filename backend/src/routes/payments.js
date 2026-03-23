@@ -137,7 +137,7 @@ r.post('/stripe/webhook', express.raw({ type: 'application/json' }), async (req,
             const plan    = await db.queryOne('SELECT * FROM subscription_plans WHERE stripe_price_id=?', [priceId]).catch(()=>null);
             if (plan) {
               const exp = new Date(Date.now() + (plan.duration_days||30)*86400000);
-              await db.query('INSERT INTO user_subscriptions (id,user_id,plan_id,status,expires_at,auto_renew) VALUES (?,?,?,?,?,1) ON DUPLICATE KEY UPDATE status="active",expires_at=?,auto_renew=1',
+              await db.query('INSERT INTO user_subscriptions (id,user_id,plan_id,status,expires_at,auto_renew) VALUES (?,?,?,?,?,1) 
                 [uuidv4(), u.id, plan.id, 'active', exp, exp]);
               if (req.io) req.io.to(`user_${u.id}`).emit('subscription_activated', { plan_name: plan.name, expires_at: exp });
             }
@@ -333,7 +333,7 @@ r.post('/subscription/activate', authenticate, async (req, res) => {
     const plan = await db.queryOne('SELECT * FROM subscription_plans WHERE id=? AND is_active=1', [plan_id]);
     if (!plan) return res.status(404).json({ success: false, message: 'Plan not found' });
     const exp = new Date(Date.now() + plan.duration_days * 86400000);
-    await db.query('INSERT INTO user_subscriptions (id,user_id,plan_id,status,expires_at,auto_renew) VALUES (?,?,?,?,?,1) ON DUPLICATE KEY UPDATE plan_id=?,status="active",expires_at=?,auto_renew=1',
+    await db.query('INSERT INTO user_subscriptions (id,user_id,plan_id,status,expires_at,auto_renew) VALUES (?,?,?,?,?,1) 
       [uuidv4(), req.userId, plan_id, 'active', exp, plan_id, exp]);
     // Credit monthly coins
     const features = typeof plan.features === 'string' ? JSON.parse(plan.features||'[]') : (plan.features||[]);

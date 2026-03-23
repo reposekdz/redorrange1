@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RedOrrange API</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #1a1a1a; color: #fff; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .card { text-align: center; padding: 2rem; }
+  h1 { color: #FF6B35; font-size: 2.5rem; margin-bottom: 0.5rem; }
+  p { color: #aaa; }
+  .badge { display: inline-block; background: #FF6B35; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; margin-top: 1rem; }
+  .endpoint { background: #2a2a2a; border-radius: 8px; padding: 1rem; margin-top: 1.5rem; text-align: left; }
+  .endpoint code { color: #FF6B35; font-family: monospace; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🔴 RedOrrange</h1>
+  <p>Full Social Media Platform API v2.0</p>
+  <div class="badge">API Running</div>
+  <div class="endpoint">
+    <p><code>GET /health</code> — Health check</p>
+    <p><code>POST /api/auth/send-otp</code> — Send OTP</p>
+    <p><code>POST /api/auth/verify-otp</code> — Verify OTP & Login</p>
+    <p><code>GET /api/users/me</code> — Current user (auth required)</p>
+    <p><code>GET /api/posts</code> — Feed</p>
+    <p>...and 80+ more endpoints</p>
+  </div>
+</div>
+</body>
+</html>

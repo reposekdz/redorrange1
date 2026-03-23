@@ -1,41 +1,45 @@
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 
-const pool = mysql.createPool({
-  host:               process.env.DB_HOST     || 'localhost',
-  port:           parseInt(process.env.DB_PORT || '3306'),
-  user:               process.env.DB_USER     || 'root',
-  password:           process.env.DB_PASSWORD || '',
-  database:           process.env.DB_NAME     || 'redorrange',
-  waitForConnections: true,
-  connectionLimit:    20,
-  queueLimit:         0,
-  timezone:           '+00:00',
-  charset:            'utf8mb4',
-  enableKeepAlive:    true,
-  keepAliveInitialDelay: 0,
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: false,
 });
+
+let paramCounter = 0;
 
 const db = {
   query: async (sql, params = []) => {
-    const [rows] = await pool.execute(sql, params);
+    const pgSql = toPostgres(sql);
+    const { rows } = await pool.query(pgSql, params);
     return rows;
   },
   queryOne: async (sql, params = []) => {
-    const [rows] = await pool.execute(sql, params);
+    const pgSql = toPostgres(sql);
+    const { rows } = await pool.query(pgSql, params);
     return rows[0] || null;
   },
   transaction: async (fn) => {
-    const conn = await pool.getConnection();
-    await conn.beginTransaction();
+    const client = await pool.connect();
+    await client.query('BEGIN');
     try {
-      const result = await fn(conn);
-      await conn.commit();
+      const db2 = {
+        query: async (sql, params = []) => {
+          const { rows } = await client.query(toPostgres(sql), params);
+          return rows;
+        },
+        queryOne: async (sql, params = []) => {
+          const { rows } = await client.query(toPostgres(sql), params);
+          return rows[0] || null;
+        },
+      };
+      const result = await fn(db2);
+      await client.query('COMMIT');
       return result;
     } catch (e) {
-      await conn.rollback();
+      await client.query('ROLLBACK');
       throw e;
     } finally {
-      conn.release();
+      client.release();
     }
   },
   test: async () => {
@@ -47,6 +51,12 @@ const db = {
       return false;
     }
   },
+  pool,
 };
+
+function toPostgres(sql) {
+  let i = 0;
+  return sql.replace(/\?/g, () => `$${++i}`);
+}
 
 module.exports = db;

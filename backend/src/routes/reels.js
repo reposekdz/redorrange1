@@ -33,7 +33,7 @@ r.post('/', authenticate, upload.fields([{name:'reel',maxCount:1},{name:'thumbna
       for (const tag of tags) {
         let h = await db.queryOne('SELECT id FROM hashtags WHERE name=?', [tag]);
         if (!h) { const hid = uuidv4(); await db.query('INSERT INTO hashtags (id, name) VALUES (?,?)', [hid, tag]); h = { id: hid }; }
-        await db.query('INSERT IGNORE INTO reel_hashtags (reel_id, hashtag_id) VALUES (?,?)', [id, h.id]).catch(() => {});
+        await db.query('INSERT INTO reel_hashtags (reel_id, hashtag_id) VALUES (?,?)', [id, h.id]).catch(() => {});
         await db.query('UPDATE hashtags SET posts_count=posts_count+1 WHERE id=?', [h.id]);
       }
     }
@@ -52,14 +52,14 @@ r.get('/:id', optionalAuth, async (req, res) => {
       SELECT r.*, u.username, u.display_name, u.avatar_url, u.is_verified,
         (SELECT COUNT(*) > 0 FROM likes WHERE target_type='reel' AND target_id=r.id AND user_id=?) AS is_liked,
         (SELECT COUNT(*) FROM likes WHERE target_type='reel' AND target_id=r.id) AS likes_count,
-        (SELECT COUNT(*) FROM comments WHERE target_type='reel' AND target_id=r.id AND is_deleted=0) AS comments_count
-      FROM reels r JOIN users u ON r.user_id=u.id WHERE r.id=? AND r.is_deleted=0
+        (SELECT COUNT(*) FROM comments WHERE target_type='reel' AND target_id=r.id AND is_deleted=FALSE) AS comments_count
+      FROM reels r JOIN users u ON r.user_id=u.id WHERE r.id=? AND r.is_deleted=FALSE
     `, [uid, req.params.id]);
     if (!reel) return res.status(404).json({ success: false, message: 'Not found' });
     reel.is_liked = !!reel.is_liked; reel.is_verified = !!reel.is_verified;
     const comments = await db.query(`
       SELECT c.*, u.username, u.display_name, u.avatar_url FROM comments c
-      JOIN users u ON c.user_id=u.id WHERE c.target_type='reel' AND c.target_id=? AND c.is_deleted=0
+      JOIN users u ON c.user_id=u.id WHERE c.target_type='reel' AND c.target_id=? AND c.is_deleted=FALSE
       ORDER BY c.created_at DESC LIMIT 20
     `, [req.params.id]);
     res.json({ success: true, reel, comments });
@@ -90,7 +90,7 @@ r.post('/:id/like', authenticate, async (req, res) => {
 r.post('/:id/view', authenticate, async (req, res) => {
   try {
     const { watched_pct = 0 } = req.body;
-    await db.query('INSERT INTO reel_views (reel_id, viewer_id, watched_pct) VALUES (?,?,?) ON DUPLICATE KEY UPDATE watched_pct=GREATEST(watched_pct,?), viewed_at=NOW()', [req.params.id, req.userId, watched_pct, watched_pct]).catch(() => {});
+    await db.query('INSERT INTO reel_views (reel_id, viewer_id, watched_pct) VALUES (?,?,?) ON CONFLICT (reel_id, viewer_id) DO UPDATE SET watched_pct=GREATEST(reel_views.watched_pct, ?)', [req.params.id, req.userId, watched_pct, watched_pct]);
     await db.query('UPDATE reels SET views_count=views_count+1 WHERE id=?', [req.params.id]);
     res.json({ success: true });
   } catch (e) { res.json({ success: false }); }
@@ -106,7 +106,7 @@ r.get('/:id/comments', optionalAuth, async (req, res) => {
         (SELECT COUNT(*) > 0 FROM likes WHERE target_type='comment' AND target_id=c.id AND user_id=?) AS is_liked,
         (SELECT COUNT(*) FROM likes WHERE target_type='comment' AND target_id=c.id) AS likes_count
       FROM comments c JOIN users u ON c.user_id=u.id
-      WHERE c.target_type='reel' AND c.target_id=? AND c.parent_id IS NULL AND c.is_deleted=0
+      WHERE c.target_type='reel' AND c.target_id=? AND c.parent_id IS NULL AND c.is_deleted=FALSE
       ORDER BY c.created_at DESC LIMIT ? OFFSET ?
     `, [req.userId, req.params.id, parseInt(limit), parseInt(offset)]);
     comments.forEach(c => { c.is_liked = !!c.is_liked; c.is_verified = !!c.is_verified; });
@@ -154,7 +154,7 @@ r.post('/:id/boost', authenticate, async (req, res) => {
 r.delete('/:id', authenticate, async (req, res) => {
   const reel = await db.queryOne('SELECT user_id FROM reels WHERE id=?', [req.params.id]);
   if (!reel || reel.user_id !== req.userId) return res.status(403).json({ success: false });
-  await db.query('UPDATE reels SET is_deleted=1 WHERE id=?', [req.params.id]);
+  await db.query('UPDATE reels SET is_deleted=TRUE WHERE id=?', [req.params.id]);
   res.json({ success: true });
 });
 
@@ -163,7 +163,7 @@ r.get('/user/:userId', authenticate, async (req, res) => {
   try {
     const reels = await db.query(`
       SELECT r.*, u.username, u.display_name, u.avatar_url FROM reels r
-      JOIN users u ON r.user_id=u.id WHERE r.user_id=? AND r.is_deleted=0 AND r.is_public=1
+      JOIN users u ON r.user_id=u.id WHERE r.user_id=? AND r.is_deleted=FALSE AND r.is_public=TRUE
       ORDER BY r.created_at DESC LIMIT 30
     `, [req.params.userId]);
     res.json({ success: true, reels });
@@ -181,7 +181,7 @@ r.get('/user/:userId', authenticate, async (req, res) => {
         (SELECT COUNT(*) > 0 FROM likes WHERE target_type='reel' AND target_id=r.id AND user_id=?) AS is_liked,
         (SELECT COUNT(*) > 0 FROM reel_saves WHERE reel_id=r.id AND user_id=?) AS is_saved
       FROM reels r JOIN users u ON r.user_id=u.id
-      WHERE r.user_id=? AND r.is_deleted=0
+      WHERE r.user_id=? AND r.is_deleted=FALSE
       ORDER BY r.created_at DESC LIMIT 30
     `, [uid, uid, targetId]);
     reels.forEach(r => { r.is_liked = !!r.is_liked; r.is_saved = !!r.is_saved; r.is_verified = !!r.is_verified; });

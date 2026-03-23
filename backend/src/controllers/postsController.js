@@ -23,8 +23,8 @@ exports._getFeedOriginal = async (req, res) => {
     const posts = await db.query(`
       SELECT p.*,
         u.username, u.display_name, u.avatar_url, u.is_verified,
-        (SELECT COUNT(*) > 0 FROM likes WHERE target_type='post' AND target_id=p.id AND user_id=?) AS is_liked,
-        (SELECT COUNT(*) > 0 FROM saved_posts WHERE post_id=p.id AND user_id=?) AS is_saved,
+        (SELECT COUNT(*) > 0 FROM likes WHERE target_type='post' AND target_id=p.id AND user_id=?)::boolean AS is_liked,
+        (SELECT COUNT(*) > 0 FROM saved_posts WHERE post_id=p.id AND user_id=?)::boolean AS is_saved,
         (SELECT reaction_type FROM likes WHERE target_type='post' AND target_id=p.id AND user_id=?) AS my_reaction,
         (SELECT COUNT(*) FROM likes WHERE target_type='post' AND target_id=p.id) AS likes_count,
         (SELECT COUNT(*) FROM comments WHERE target_type='post' AND target_id=p.id AND is_deleted=0) AS comments_count,
@@ -73,7 +73,7 @@ exports.createPost = async (req, res) => {
       for (const tag of tags) {
         let h = await db.queryOne('SELECT id FROM hashtags WHERE name=?', [tag]);
         if (!h) { const hid = uuidv4(); await db.query('INSERT INTO hashtags (id, name) VALUES (?,?)', [hid, tag]); h = { id: hid }; }
-        await db.query('INSERT IGNORE INTO post_hashtags (post_id, hashtag_id) VALUES (?,?)', [id, h.id]);
+        await db.query('INSERT INTO post_hashtags (post_id, hashtag_id) VALUES (?,?) ON CONFLICT DO NOTHING', [id, h.id]);
         await db.query('UPDATE hashtags SET posts_count=posts_count+1 WHERE id=?', [h.id]);
       }
     }
@@ -97,11 +97,11 @@ exports.getPost = async (req, res) => {
     const uid = req.userId;
     const post = await db.queryOne(`
       SELECT p.*, u.username, u.display_name, u.avatar_url, u.is_verified,
-        (SELECT COUNT(*) > 0 FROM likes WHERE target_type='post' AND target_id=p.id AND user_id=?) AS is_liked,
-        (SELECT COUNT(*) > 0 FROM saved_posts WHERE post_id=p.id AND user_id=?) AS is_saved,
+        (SELECT COUNT(*) > 0 FROM likes WHERE target_type='post' AND target_id=p.id AND user_id=?)::boolean AS is_liked,
+        (SELECT COUNT(*) > 0 FROM saved_posts WHERE post_id=p.id AND user_id=?)::boolean AS is_saved,
         (SELECT COUNT(*) FROM likes WHERE target_type='post' AND target_id=p.id) AS likes_count,
-        (SELECT COUNT(*) FROM comments WHERE target_type='post' AND target_id=p.id AND is_deleted=0) AS comments_count
-      FROM posts p JOIN users u ON p.user_id=u.id WHERE p.id=? AND p.is_deleted=0
+        (SELECT COUNT(*) FROM comments WHERE target_type='post' AND target_id=p.id AND is_deleted=FALSE) AS comments_count
+      FROM posts p JOIN users u ON p.user_id=u.id WHERE p.id=? AND p.is_deleted=FALSE
     `, [uid, uid, req.params.id]);
     if (!post) return res.status(404).json({ success: false, message: 'Post not found' });
     post.is_liked = !!post.is_liked; post.is_saved = !!post.is_saved; post.is_verified = !!post.is_verified;
@@ -116,7 +116,7 @@ exports.likePost = async (req, res) => {
   try {
     const uid = req.userId; const pid = req.params.id;
     const { reaction_type = 'like' } = req.body;
-    const ex = await db.queryOne('SELECT id FROM likes WHERE target_type="post" AND target_id=? AND user_id=?', [pid, uid]);
+    const ex = await db.queryOne("SELECT id FROM likes WHERE target_type='post' AND target_id=? AND user_id=?", [pid, uid]);
     if (ex) {
       await db.query('DELETE FROM likes WHERE id=?', [ex.id]);
       await db.query('UPDATE posts SET likes_count=GREATEST(0,likes_count-1) WHERE id=?', [pid]);
@@ -142,10 +142,10 @@ exports.getComments = async (req, res) => {
     const offset = (page - 1) * parseInt(limit);
     const comments = await db.query(`
       SELECT c.*, u.username, u.display_name, u.avatar_url, u.is_verified,
-        (SELECT COUNT(*) > 0 FROM likes WHERE target_type='comment' AND target_id=c.id AND user_id=?) AS is_liked,
+        (SELECT COUNT(*) > 0 FROM likes WHERE target_type='comment' AND target_id=c.id AND user_id=?)::boolean AS is_liked,
         (SELECT COUNT(*) FROM likes WHERE target_type='comment' AND target_id=c.id) AS likes_count
       FROM comments c JOIN users u ON c.user_id=u.id
-      WHERE c.target_type='post' AND c.target_id=? AND c.parent_id ${parent_id ? '=?' : 'IS NULL'} AND c.is_deleted=0
+      WHERE c.target_type='post' AND c.target_id=? AND c.parent_id ${parent_id ? '=?' : 'IS NULL'} AND c.is_deleted=FALSE
       ORDER BY c.created_at DESC LIMIT ? OFFSET ?
     `, parent_id ? [uid, req.params.id, parent_id, parseInt(limit), parseInt(offset)] : [uid, req.params.id, parseInt(limit), parseInt(offset)]);
     comments.forEach(c => { c.is_liked = !!c.is_liked; c.is_verified = !!c.is_verified; });
@@ -190,7 +190,7 @@ exports.savePost = async (req, res) => {
 exports.sharePost = async (req, res) => {
   try {
     const uid = req.userId; const pid = req.params.id;
-    await db.query('INSERT INTO shares (user_id, post_id) VALUES (?,?) ON DUPLICATE KEY UPDATE created_at=NOW()', [uid, pid]).catch(() => {});
+    await db.query('INSERT INTO shares (user_id, post_id) VALUES (?,?) ON CONFLICT DO NOTHING', [uid, pid]).catch(() => {});
     await db.query('UPDATE posts SET shares_count=shares_count+1 WHERE id=?', [pid]);
     const post = await db.queryOne('SELECT user_id FROM posts WHERE id=?', [pid]);
     const actor = await db.queryOne('SELECT display_name, username FROM users WHERE id=?', [uid]);
@@ -206,7 +206,7 @@ exports.deletePost = async (req, res) => {
     const post = await db.queryOne('SELECT user_id FROM posts WHERE id=?', [pid]);
     if (!post) return res.status(404).json({ success: false, message: 'Post not found' });
     if (post.user_id !== req.userId) return res.status(403).json({ success: false, message: 'Not authorized' });
-    await db.query('UPDATE posts SET is_deleted=1 WHERE id=?', [pid]);
+    await db.query('UPDATE posts SET is_deleted=TRUE WHERE id=?', [pid]);
     await db.query('UPDATE users SET posts_count=GREATEST(0,posts_count-1) WHERE id=?', [req.userId]);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }

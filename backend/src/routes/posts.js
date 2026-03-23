@@ -23,7 +23,7 @@ r.delete('/:id/comments/:commentId', authenticate, async (req, res) => {
   try {
     const comment = await db.queryOne('SELECT id FROM comments WHERE id=? AND (user_id=? OR (SELECT user_id FROM posts WHERE id=?)=?)', [req.params.commentId, req.userId, req.params.id, req.userId]);
     if (!comment) return res.status(403).json({ success: false, message: 'Not authorized' });
-    await db.query('UPDATE comments SET is_deleted=1 WHERE id=?', [req.params.commentId]);
+    await db.query('UPDATE comments SET is_deleted=TRUE WHERE id=?', [req.params.commentId]);
     await db.query('UPDATE posts SET comments_count=GREATEST(0,comments_count-1) WHERE id=?', [req.params.id]);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
@@ -61,7 +61,7 @@ r.get('/:id/insights', authenticate, async (req, res) => {
     if (!post) return res.status(404).json({ success: false, message: 'Not found or not your post' });
     const [likes, comments, shares, saves, followers] = await Promise.all([
       db.queryOne('SELECT COUNT(*) AS c FROM likes WHERE target_type="post" AND target_id=?', [req.params.id]),
-      db.queryOne('SELECT COUNT(*) AS c FROM comments WHERE target_type="post" AND target_id=? AND is_deleted=0', [req.params.id]),
+      db.queryOne('SELECT COUNT(*) AS c FROM comments WHERE target_type="post" AND target_id=? AND is_deleted=FALSE', [req.params.id]),
       db.queryOne('SELECT COUNT(*) AS c FROM shares WHERE post_id=?', [req.params.id]),
       db.queryOne('SELECT COUNT(*) AS c FROM saved_posts WHERE post_id=?', [req.params.id]),
       db.queryOne('SELECT followers_count FROM users WHERE id=?', [req.userId]),

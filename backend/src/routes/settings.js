@@ -28,7 +28,7 @@ r.put('/', authenticate, async (req, res) => {
     for (const k of allowed) { if (req.body[k] !== undefined) fields[k] = req.body[k]; }
     if (Object.keys(fields).length) {
       const sets = Object.keys(fields).map(k => `${k}=?`).join(', ');
-      await db.query(`INSERT INTO user_settings (user_id, ${Object.keys(fields).join(',')}) VALUES (?, ${Object.keys(fields).map(() => '?').join(',')}) ON DUPLICATE KEY UPDATE ${sets}`, [req.userId, ...Object.values(fields), ...Object.values(fields)]);
+      await db.query(`INSERT INTO user_settings (user_id, ${Object.keys(fields).join(',')}) VALUES (?, ${Object.keys(fields).map(() => '?').join(',')}) 
     }
     // Sync some settings to users table
     if ('show_online_status' in fields) await db.query('UPDATE users SET show_online_status=? WHERE id=?', [fields.show_online_status ? 1 : 0, req.userId]);
@@ -46,7 +46,7 @@ r.put('/notifications', authenticate, async (req, res) => {
     for (const k of allowed) { if (req.body[k] !== undefined) fields[k] = req.body[k] ? 1 : 0; }
     if (Object.keys(fields).length) {
       const sets = Object.keys(fields).map(k => `${k}=?`).join(', ');
-      await db.query(`INSERT INTO notification_preferences (user_id, ${Object.keys(fields).join(',')}) VALUES (?, ${Object.keys(fields).map(() => '?').join(',')}) ON DUPLICATE KEY UPDATE ${sets}`, [req.userId, ...Object.values(fields), ...Object.values(fields)]);
+      await db.query(`INSERT INTO notification_preferences (user_id, ${Object.keys(fields).join(',')}) VALUES (?, ${Object.keys(fields).map(() => '?').join(',')}) 
     }
     res.json({ success: true });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }

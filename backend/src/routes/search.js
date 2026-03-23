@@ -49,7 +49,7 @@ r.get('/hashtag/:tag', authenticate, async (req, res) => {
       JOIN users u ON p.user_id=u.id
       JOIN post_hashtags ph ON p.id=ph.post_id
       JOIN hashtags h ON ph.hashtag_id=h.id
-      WHERE h.name=? AND p.is_public=1 AND p.is_deleted=0
+      WHERE h.name=? AND p.is_public=TRUE AND p.is_deleted=FALSE
       ORDER BY p.likes_count DESC, p.created_at DESC
       LIMIT ? OFFSET ?
     `, [req.userId, tag, parseInt(limit), offset]);

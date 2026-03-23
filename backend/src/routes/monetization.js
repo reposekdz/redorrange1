@@ -85,7 +85,7 @@ r.post('/subscribe/stripe', authenticate, async (req, res) => {
     });
     const subId = uuidv4();
     await db.query(
-      'INSERT INTO user_subscriptions (id,user_id,plan_id,status,provider,provider_subscription_id,current_period_start,current_period_end) VALUES (?,?,?,?,?,?,NOW(),DATE_ADD(NOW(),INTERVAL 30 DAY))',
+      'INSERT INTO user_subscriptions (id,user_id,plan_id,status,provider,provider_subscription_id,current_period_start,current_period_end) VALUES (?,?,?,?,?,?,NOW(),NOW() + INTERVAL '30 day')',
       [subId, req.userId, plan_id, 'incomplete', 'stripe', sub.subscription_id]
     );
     res.json({ success: true, subscription_id: subId, stripe_sub_id: sub.subscription_id, client_secret: sub.client_secret, status: sub.status });

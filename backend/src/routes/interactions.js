@@ -36,7 +36,7 @@ r.delete('/comments/:id', authenticate, async (req, res) => {
       );
       if (targetOwner?.user_id !== req.userId) return res.status(403).json({ success: false, message: 'Not authorized' });
     }
-    await db.query('UPDATE comments SET is_deleted=1 WHERE id=?', [req.params.id]);
+    await db.query('UPDATE comments SET is_deleted=TRUE WHERE id=?', [req.params.id]);
     if (comment.parent_id) await db.query('UPDATE comments SET replies_count=GREATEST(0,replies_count-1) WHERE id=?', [comment.parent_id]);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
@@ -51,7 +51,7 @@ r.get('/comments/:id/replies', authenticate, async (req, res) => {
         (SELECT COUNT(*) > 0 FROM likes WHERE target_type='comment' AND target_id=c.id AND user_id=?) AS is_liked,
         (SELECT COUNT(*) FROM likes WHERE target_type='comment' AND target_id=c.id) AS likes_count
       FROM comments c JOIN users u ON c.user_id=u.id
-      WHERE c.parent_id=? AND c.is_deleted=0
+      WHERE c.parent_id=? AND c.is_deleted=FALSE
       ORDER BY c.created_at ASC LIMIT ? OFFSET ?
     `, [req.userId, req.params.id, parseInt(limit), (page-1)*parseInt(limit)]);
     replies.forEach(r => { r.is_liked = !!r.is_liked; r.is_verified = !!r.is_verified; });

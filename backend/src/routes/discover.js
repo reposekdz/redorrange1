@@ -15,7 +15,7 @@ r.get('/explore', authenticate, async (req, res) => {
         SELECT r.*, u.username, u.display_name, u.avatar_url, u.is_verified,
           (SELECT COUNT(*) > 0 FROM likes WHERE target_type='reel' AND target_id=r.id AND user_id=?) AS is_liked
         FROM reels r JOIN users u ON r.user_id=u.id
-        WHERE r.is_public=1
+        WHERE r.is_public=TRUE
           AND r.user_id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id=?)
         ORDER BY r.views_count DESC, r.created_at DESC LIMIT 12
       `, [uid, uid]),
@@ -32,8 +32,8 @@ r.get('/explore', authenticate, async (req, res) => {
         SELECT p.*, u.username, u.display_name, u.avatar_url, u.is_verified,
           (SELECT media_url FROM post_media WHERE post_id=p.id LIMIT 1) AS thumbnail
         FROM posts p JOIN users u ON p.user_id=u.id
-        WHERE p.is_public=1 AND p.is_deleted=0
-          AND p.created_at > DATE_SUB(NOW(), INTERVAL 3 DAY)
+        WHERE p.is_public=TRUE AND p.is_deleted=FALSE
+          AND p.created_at > NOW() - INTERVAL '3 day'
           AND p.user_id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id=?)
         ORDER BY p.likes_count DESC LIMIT 9
       `, [uid]),

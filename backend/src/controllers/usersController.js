@@ -3,7 +3,7 @@ const { getFileUrl } = require('../middleware/upload');
 const { notify } = require('../services/notificationService');
 
 // GET /api/users/:id
-exports.getUser = async (req, res) => {
+exports.getProfile = exports.getUser = async (req, res) => {
   try {
     const user = await db.queryOne(`
       SELECT u.id, u.username, u.display_name, u.bio, u.avatar_url, u.cover_url,
@@ -11,8 +11,8 @@ exports.getUser = async (req, res) => {
         u.last_seen, u.status_text, u.created_at,
         (SELECT COUNT(*) FROM follows WHERE following_id=u.id AND status='accepted') AS followers_count,
         (SELECT COUNT(*) FROM follows WHERE follower_id=u.id  AND status='accepted') AS following_count,
-        (SELECT COUNT(*) FROM posts  WHERE user_id=u.id AND is_public=1) AS posts_count,
-        (SELECT COUNT(*) FROM reels  WHERE user_id=u.id AND is_public=1) AS reels_count,
+        (SELECT COUNT(*) FROM posts  WHERE user_id=u.id AND is_public=TRUE) AS posts_count,
+        (SELECT COUNT(*) FROM reels  WHERE user_id=u.id AND is_public=TRUE) AS reels_count,
         (SELECT status  FROM follows WHERE follower_id=? AND following_id=u.id) AS follow_status,
         (SELECT COUNT(*) > 0 FROM blocks WHERE blocker_id=? AND blocked_id=u.id) AS is_blocked,
         (SELECT COUNT(*) > 0 FROM blocks WHERE blocker_id=u.id AND blocked_id=?) AS blocked_me
@@ -59,7 +59,7 @@ exports.updateProfile = async (req, res) => {
 };
 
 // POST /api/users/:id/follow
-exports.toggleFollow = async (req, res) => {
+exports.followUser = exports.toggleFollow = async (req, res) => {
   try {
     const targetId = req.params.id;
     if (targetId === req.userId) return res.status(400).json({ success: false, message: 'Cannot follow yourself' });
@@ -122,17 +122,17 @@ exports.getUserPosts = async (req, res) => {
   const posts = await db.query(`
     SELECT p.*, u.username, u.display_name, u.avatar_url,
       (SELECT COUNT(*) FROM likes WHERE target_type='post' AND target_id=p.id) AS likes_count,
-      (SELECT COUNT(*) FROM comments WHERE target_type='post' AND target_id=p.id AND is_deleted=0) AS comments_count,
+      (SELECT COUNT(*) FROM comments WHERE target_type='post' AND target_id=p.id AND is_deleted=FALSE) AS comments_count,
       (SELECT media_url FROM post_media WHERE post_id=p.id ORDER BY order_index LIMIT 1) AS thumbnail
     FROM posts p JOIN users u ON p.user_id=u.id
-    WHERE p.user_id=? AND p.is_public=1
+    WHERE p.user_id=? AND p.is_public=TRUE
     ORDER BY p.created_at DESC LIMIT ? OFFSET ?
   `, [req.params.id, parseInt(limit), parseInt(offset)]);
   res.json({ success: true, posts });
 };
 
 // POST /api/users/:id/block
-exports.toggleBlock = async (req, res) => {
+exports.blockUser = exports.toggleBlock = async (req, res) => {
   try {
     const ex = await db.queryOne('SELECT id FROM blocks WHERE blocker_id=? AND blocked_id=?', [req.userId, req.params.id]);
     if (ex) {
@@ -151,7 +151,7 @@ exports.getUserReels = async (req, res) => {
   const { page = 1, limit = 9 } = req.query;
   const offset = (page - 1) * limit;
   const reels = await db.query(
-    'SELECT * FROM reels WHERE user_id=? AND is_public=1 ORDER BY created_at DESC LIMIT ? OFFSET ?',
+    'SELECT * FROM reels WHERE user_id=? AND is_public=TRUE ORDER BY created_at DESC LIMIT ? OFFSET ?',
     [req.params.id, parseInt(limit), parseInt(offset)]
   );
   res.json({ success: true, reels });
@@ -239,7 +239,7 @@ exports.getTaggedPosts = async (req, res) => {
       SELECT p.*, u.username, u.display_name, u.avatar_url,
         (SELECT media_url FROM post_media WHERE post_id=p.id ORDER BY order_index LIMIT 1) AS thumbnail
       FROM post_tags pt JOIN posts p ON pt.post_id=p.id JOIN users u ON p.user_id=u.id
-      WHERE pt.tagged_user_id=? AND p.is_deleted=0
+      WHERE pt.tagged_user_id=? AND p.is_deleted=FALSE
       ORDER BY p.created_at DESC LIMIT 30
     `, [req.params.id]);
     res.json({ success: true, posts });

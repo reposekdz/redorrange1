@@ -60,11 +60,12 @@ exports.getContacts = async (req, res) => {
     const { q } = req.query;
     let sql = `
       SELECT u.id, u.username, u.display_name, u.avatar_url, u.is_verified, u.is_online, u.last_seen, u.status_text,
-        c.nickname, c.is_blocked
+        c.nickname,
+        (SELECT COUNT(*) > 0 FROM blocks WHERE blocker_id=? AND blocked_id=u.id) AS is_blocked
       FROM contacts c JOIN users u ON c.contact_id=u.id
       WHERE c.user_id=?
     `;
-    const params = [req.userId];
+    const params = [req.userId, req.userId];
     if (q) { sql += ' AND (u.display_name LIKE ? OR u.username LIKE ? OR c.nickname LIKE ?)'; params.push(`%${q}%`, `%${q}%`, `%${q}%`); }
     sql += ' ORDER BY u.display_name ASC';
 
@@ -84,4 +85,12 @@ exports.removeContact = async (req, res) => {
 exports.setNickname = async (req, res) => {
   await db.query('UPDATE contacts SET nickname=? WHERE user_id=? AND contact_id=?', [req.body.nickname, req.userId, req.params.id]);
   res.json({ success: true });
+};
+
+// POST /api/contacts/:id/block
+exports.blockContact = async (req, res) => {
+  try {
+    await db.query('INSERT INTO blocks (blocker_id, blocked_id) VALUES (?,?) ON CONFLICT DO NOTHING', [req.userId, req.params.id]);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 };

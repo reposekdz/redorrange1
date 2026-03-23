@@ -34,7 +34,7 @@ r.get('/users', async (req, res) => {
 });
 
 r.post('/users/:id/verify', async (req, res) => {
-  await db.query('UPDATE users SET is_verified=1 WHERE id=?', [req.params.id]);
+  await db.query('UPDATE users SET is_verified=TRUE WHERE id=?', [req.params.id]);
   res.json({ success: true });
 });
 

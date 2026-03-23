@@ -20,22 +20,22 @@ r.get('/analytics/profile', authenticate, async (req, res) => {
     const [views, posts, engagement, followers, reachData, topPosts] = await Promise.all([
       db.queryOne(`
         SELECT COUNT(*) AS c FROM post_views pv JOIN posts p ON pv.post_id=p.id
-        WHERE p.user_id=? AND pv.viewed_at > DATE_SUB(NOW(), INTERVAL ? DAY)
+        WHERE p.user_id=? AND pv.viewed_at > DATE_SUB(NOW(), INTERVAL '? day')
       `, [uid, days]),
-      db.queryOne(`SELECT COUNT(*) AS c, COALESCE(SUM(likes_count),0) AS likes, COALESCE(SUM(comments_count),0) AS comments, COALESCE(SUM(views_count),0) AS views FROM posts WHERE user_id=? AND is_deleted=0 AND created_at > DATE_SUB(NOW(), INTERVAL ? DAY)`, [uid, days]),
+      db.queryOne(`SELECT COUNT(*) AS c, COALESCE(SUM(likes_count),0) AS likes, COALESCE(SUM(comments_count),0) AS comments, COALESCE(SUM(views_count),0) AS views FROM posts WHERE user_id=? AND is_deleted=FALSE AND created_at > DATE_SUB(NOW(), INTERVAL '? day')`, [uid, days]),
       db.queryOne(`SELECT followers_count, following_count FROM users WHERE id=?`, [uid]),
       db.query(`
         SELECT DATE(created_at) AS d, COUNT(*) AS new_followers
-        FROM follows WHERE following_id=? AND status='accepted' AND created_at > DATE_SUB(NOW(), INTERVAL ? DAY)
+        FROM follows WHERE following_id=? AND status='accepted' AND created_at > DATE_SUB(NOW(), INTERVAL '? day')
         GROUP BY DATE(created_at) ORDER BY d
       `, [uid, days]),
       db.queryOne(`
-        SELECT COALESCE(SUM(p.views_count),0) AS total_reach FROM posts p WHERE p.user_id=? AND p.is_deleted=0
+        SELECT COALESCE(SUM(p.views_count),0) AS total_reach FROM posts p WHERE p.user_id=? AND p.is_deleted=FALSE
       `, [uid]),
       db.query(`
         SELECT id, caption, likes_count, comments_count, views_count, created_at,
           (SELECT media_url FROM post_media WHERE post_id=p.id LIMIT 1) AS thumbnail
-        FROM posts p WHERE user_id=? AND is_deleted=0
+        FROM posts p WHERE user_id=? AND is_deleted=FALSE
         ORDER BY likes_count DESC LIMIT 5
       `, [uid]),
     ]);
@@ -72,7 +72,7 @@ r.get('/analytics/post/:id', authenticate, async (req, res) => {
     const [views, likes, comments, saves, shares, reactions, hourly] = await Promise.all([
       db.queryOne(`SELECT COUNT(*) AS c FROM post_views WHERE post_id=?`, [pid]),
       db.queryOne(`SELECT COUNT(*) AS c FROM likes WHERE target_type='post' AND target_id=?`, [pid]),
-      db.queryOne(`SELECT COUNT(*) AS c FROM comments WHERE target_type='post' AND target_id=? AND is_deleted=0`, [pid]),
+      db.queryOne(`SELECT COUNT(*) AS c FROM comments WHERE target_type='post' AND target_id=? AND is_deleted=FALSE`, [pid]),
       db.queryOne(`SELECT COUNT(*) AS c FROM saved_posts WHERE post_id=?`, [pid]),
       db.queryOne(`SELECT COUNT(*) AS c FROM shares WHERE post_id=?`, [pid]),
       db.query(`SELECT reaction_type, COUNT(*) AS cnt FROM likes WHERE target_type='post' AND target_id=? GROUP BY reaction_type`, [pid]),
@@ -174,7 +174,7 @@ r.post('/collections', authenticate, async (req, res) => {
 r.post('/collections/:id/add', authenticate, async (req, res) => {
   try {
     const { post_id } = req.body;
-    await db.query('INSERT IGNORE INTO collection_items (collection_id, post_id) VALUES (?,?)', [req.params.id, post_id]);
+    await db.query('INSERT INTO collection_items (collection_id, post_id) VALUES (?,?)', [req.params.id, post_id]);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
@@ -194,7 +194,7 @@ r.get('/suggestions/content', authenticate, async (req, res) => {
       FROM post_hashtags ph
       JOIN hashtags h ON ph.hashtag_id=h.id
       JOIN posts p ON ph.post_id=p.id
-      WHERE p.user_id=? AND p.is_deleted=0
+      WHERE p.user_id=? AND p.is_deleted=FALSE
       GROUP BY h.id ORDER BY best_likes DESC LIMIT 5
     `, [uid]);
 
@@ -224,7 +224,7 @@ r.post('/link-preview', authenticate, async (req, res) => {
     const { url } = req.body;
     if (!url) return res.json({ success: false });
     // Check cache
-    const cached = await db.queryOne('SELECT * FROM link_previews WHERE url=? AND created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)', [url]);
+    const cached = await db.queryOne('SELECT * FROM link_previews WHERE url=? AND created_at > NOW() - INTERVAL '24 hour'', [url]);
     if (cached) return res.json({ success: true, preview: cached });
 
     // Fetch metadata (simple approach)
@@ -237,7 +237,7 @@ r.post('/link-preview', authenticate, async (req, res) => {
     const siteM  = html.match(/<meta property="og:site_name" content="([^"]+)"/i);
 
     const preview = { url, title: titleM?.[1] || '', description: descM?.[1] || '', image: imgM?.[1] || null, site_name: siteM?.[1] || new URL(url).hostname };
-    await db.query('INSERT INTO link_previews (url, title, description, image_url, site_name) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE title=VALUES(title)', [url, preview.title, preview.description, preview.image, preview.site_name]);
+    await db.query('INSERT INTO link_previews (url, title, description, image_url, site_name) VALUES (?,?,?,?,?) 
     res.json({ success: true, preview });
   } catch (e) { res.json({ success: false, preview: null }); }
 });
@@ -249,7 +249,7 @@ r.post('/users/status', authenticate, async (req, res) => {
     const expiresAt = new Date(Date.now() + expires_in_hours * 3600000);
     await db.query('UPDATE users SET status_text=? WHERE id=?', [status_text || null, req.userId]);
     if (mood) {
-      await db.query('INSERT INTO user_moods (user_id, mood, text, expires_at) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE mood=?, text=?, expires_at=?',
+      await db.query('INSERT INTO user_moods (user_id, mood, text, expires_at) VALUES (?,?,?,?) 
         [req.userId, mood, status_text || null, expiresAt, mood, status_text || null, expiresAt]);
     }
     res.json({ success: true });
@@ -319,7 +319,7 @@ r.get('/close-friends', authenticate, async (req, res) => {
 r.post('/close-friends/add', authenticate, async (req, res) => {
   try {
     const { user_id } = req.body;
-    await db.query('INSERT IGNORE INTO close_friends (user_id, friend_id) VALUES (?,?)', [req.userId, user_id]);
+    await db.query('INSERT INTO close_friends (user_id, friend_id) VALUES (?,?)', [req.userId, user_id]);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });

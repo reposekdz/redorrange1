@@ -33,7 +33,7 @@ exports.sendOtp = async (req, res) => {
 
     // Rate-limit: 5 per hour
     const recent = await db.queryOne(
-      'SELECT COUNT(*) AS c FROM otp_codes WHERE phone_number=? AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)',
+      "SELECT COUNT(*) AS c FROM otp_codes WHERE phone_number=? AND created_at > NOW() - INTERVAL '1 hour'",
       [full]
     );
     if (recent.c >= 5) return res.status(429).json({ success: false, message: 'Too many requests. Try in 1 hour.' });
@@ -64,7 +64,7 @@ exports.verifyOtp = async (req, res) => {
 
     const full = `${country_code}${phone_number.replace(/\D/g,'')}`;
     const rec  = await db.queryOne(
-      'SELECT * FROM otp_codes WHERE phone_number=? AND verified=0 ORDER BY created_at DESC LIMIT 1',
+      'SELECT * FROM otp_codes WHERE phone_number=? AND verified=FALSE ORDER BY created_at DESC LIMIT 1',
       [full]
     );
     if (!rec) return res.status(400).json({ success: false, message: 'No pending OTP' });
@@ -74,7 +74,7 @@ exports.verifyOtp = async (req, res) => {
     await db.query('UPDATE otp_codes SET attempts=attempts+1 WHERE id=?', [rec.id]);
     if (rec.code !== code) return res.status(400).json({ success: false, message: 'Invalid code' });
 
-    await db.query('UPDATE otp_codes SET verified=1 WHERE id=?', [rec.id]);
+    await db.query('UPDATE otp_codes SET verified=TRUE WHERE id=?', [rec.id]);
 
     let user     = await db.queryOne('SELECT * FROM users WHERE phone_number=?', [full]);
     let isNew    = false;

@@ -77,9 +77,9 @@ r.get('/campaigns', authenticate, async (req, res) => {
     let sql = `
       SELECT c.*,
         (SELECT COUNT(*) FROM ads WHERE campaign_id=c.id) AS ads_count,
-        (SELECT SUM(impressions) FROM ad_daily_stats WHERE campaign_id=c.id AND stat_date >= DATE_SUB(CURDATE(),INTERVAL 7 DAY)) AS impressions_7d,
-        (SELECT SUM(clicks) FROM ad_daily_stats WHERE campaign_id=c.id AND stat_date >= DATE_SUB(CURDATE(),INTERVAL 7 DAY)) AS clicks_7d,
-        (SELECT SUM(spend) FROM ad_daily_stats WHERE campaign_id=c.id AND stat_date >= DATE_SUB(CURDATE(),INTERVAL 7 DAY)) AS spend_7d
+        (SELECT SUM(impressions) FROM ad_daily_stats WHERE campaign_id=c.id AND stat_date >= CURRENT_DATE - INTERVAL '7 day') AS impressions_7d,
+        (SELECT SUM(clicks) FROM ad_daily_stats WHERE campaign_id=c.id AND stat_date >= CURRENT_DATE - INTERVAL '7 day') AS clicks_7d,
+        (SELECT SUM(spend) FROM ad_daily_stats WHERE campaign_id=c.id AND stat_date >= CURRENT_DATE - INTERVAL '7 day') AS spend_7d
       FROM ad_campaigns c WHERE c.account_id=?
     `;
     const params = [account.id];
@@ -153,10 +153,10 @@ r.get('/campaigns/:id/analytics', authenticate, async (req, res) => {
     const { period = '7d' } = req.query;
     const days = period === '30d' ? 30 : period === '90d' ? 90 : 7;
     const [daily, totals, topAds, hourly] = await Promise.all([
-      db.query('SELECT * FROM ad_daily_stats WHERE campaign_id=? AND stat_date >= DATE_SUB(CURDATE(),INTERVAL ? DAY) ORDER BY stat_date', [req.params.id, days]),
-      db.queryOne('SELECT SUM(impressions) AS impressions, SUM(clicks) AS clicks, SUM(spend) AS spend, SUM(reach) AS reach, SUM(conversions) AS conversions, SUM(video_views) AS video_views FROM ad_daily_stats WHERE campaign_id=? AND stat_date >= DATE_SUB(CURDATE(),INTERVAL ? DAY)', [req.params.id, days]),
-      db.query('SELECT a.id, a.name, a.format, SUM(s.impressions) AS impressions, SUM(s.clicks) AS clicks, SUM(s.spend) AS spend FROM ad_daily_stats s JOIN ads a ON s.ad_id=a.id WHERE s.campaign_id=? AND s.stat_date >= DATE_SUB(CURDATE(),INTERVAL ? DAY) GROUP BY a.id ORDER BY clicks DESC LIMIT 5', [req.params.id, days]),
-      db.query('SELECT HOUR(created_at) AS hour, COUNT(*) AS clicks FROM ad_clicks WHERE campaign_id=? AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) GROUP BY hour ORDER BY hour', [req.params.id, days]),
+      db.query('SELECT * FROM ad_daily_stats WHERE campaign_id=? AND stat_date >= DATE_SUB(CURRENT_DATE,INTERVAL '? day') ORDER BY stat_date', [req.params.id, days]),
+      db.queryOne('SELECT SUM(impressions) AS impressions, SUM(clicks) AS clicks, SUM(spend) AS spend, SUM(reach) AS reach, SUM(conversions) AS conversions, SUM(video_views) AS video_views FROM ad_daily_stats WHERE campaign_id=? AND stat_date >= DATE_SUB(CURRENT_DATE,INTERVAL '? day')', [req.params.id, days]),
+      db.query('SELECT a.id, a.name, a.format, SUM(s.impressions) AS impressions, SUM(s.clicks) AS clicks, SUM(s.spend) AS spend FROM ad_daily_stats s JOIN ads a ON s.ad_id=a.id WHERE s.campaign_id=? AND s.stat_date >= DATE_SUB(CURRENT_DATE,INTERVAL '? day') GROUP BY a.id ORDER BY clicks DESC LIMIT 5', [req.params.id, days]),
+      db.query('SELECT HOUR(created_at) AS hour, COUNT(*) AS clicks FROM ad_clicks WHERE campaign_id=? AND created_at >= DATE_SUB(NOW(), INTERVAL '? day') GROUP BY hour ORDER BY hour', [req.params.id, days]),
     ]);
     const ctr  = totals?.impressions > 0 ? (totals.clicks / totals.impressions * 100).toFixed(2) : '0.00';
     const cpm  = totals?.impressions > 0 ? (totals.spend / totals.impressions * 1000).toFixed(2) : '0.00';
@@ -171,7 +171,7 @@ r.get('/campaigns/:id/analytics', authenticate, async (req, res) => {
 
 r.get('/campaigns/:campaignId/ads', authenticate, async (req, res) => {
   try {
-    const ads = await db.query(`SELECT a.*, s.impressions_7d, s.clicks_7d, s.spend_7d FROM ads a LEFT JOIN (SELECT ad_id, SUM(impressions) AS impressions_7d, SUM(clicks) AS clicks_7d, SUM(spend) AS spend_7d FROM ad_daily_stats WHERE stat_date >= DATE_SUB(CURDATE(),INTERVAL 7 DAY) GROUP BY ad_id) s ON a.id=s.ad_id WHERE a.campaign_id=? ORDER BY a.created_at DESC`, [req.params.campaignId]);
+    const ads = await db.query(`SELECT a.*, s.impressions_7d, s.clicks_7d, s.spend_7d FROM ads a LEFT JOIN (SELECT ad_id, SUM(impressions) AS impressions_7d, SUM(clicks) AS clicks_7d, SUM(spend) AS spend_7d FROM ad_daily_stats WHERE stat_date >= CURRENT_DATE - INTERVAL '7 day' GROUP BY ad_id) s ON a.id=s.ad_id WHERE a.campaign_id=? ORDER BY a.created_at DESC`, [req.params.campaignId]);
     res.json({ success: true, ads });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
@@ -250,8 +250,8 @@ r.get('/serve/:placement', async (req, res) => {
       WHERE a.status='active'
         AND c.status='active'
         AND ac.status='active'
-        AND c.start_date <= CURDATE()
-        AND (c.end_date IS NULL OR c.end_date >= CURDATE())
+        AND c.start_date <= CURRENT_DATE
+        AND (c.end_date IS NULL OR c.end_date >= CURRENT_DATE)
         AND c.spent_amount < c.budget_amount
     `;
     const params = [];
@@ -275,7 +275,7 @@ r.get('/serve/:placement', async (req, res) => {
       db.query('UPDATE ad_campaigns SET impressions_total=impressions_total+1, spent_amount=spent_amount+? WHERE id=?', [cost, ad.campaign_id]).catch(()=>{});
       db.query('UPDATE ad_accounts SET total_spent=total_spent+? WHERE id=?', [cost, ad.account_id]).catch(()=>{});
       // Upsert daily stats
-      db.query(`INSERT INTO ad_daily_stats (id, ad_id, campaign_id, account_id, stat_date, impressions, spend) VALUES (UUID(),?,?,?,CURDATE(),1,?) ON DUPLICATE KEY UPDATE impressions=impressions+1, spend=spend+?`,
+      db.query(`INSERT INTO ad_daily_stats (id, ad_id, campaign_id, account_id, stat_date, impressions, spend) VALUES (UUID(),?,?,?,CURRENT_DATE,1,?) 
         [ad.id, ad.campaign_id, ad.account_id, cost, cost]).catch(()=>{});
     }
 
@@ -294,7 +294,7 @@ r.post('/click/:adId', async (req, res) => {
       [req.params.adId, ad.campaign_id, user_id||null, placement||null, click_type, cost, req.ip, req.headers['user-agent']?.substring(0,500)||null]).catch(()=>{});
     db.query('UPDATE ads SET clicks=clicks+1, cost_per_click=(spend+?)/(clicks+1) WHERE id=?', [cost, req.params.adId]).catch(()=>{});
     db.query('UPDATE ad_campaigns SET clicks_total=clicks_total+1, spent_amount=spent_amount+? WHERE id=?', [cost, ad.campaign_id]).catch(()=>{});
-    db.query(`INSERT INTO ad_daily_stats (id, ad_id, campaign_id, account_id, stat_date, clicks, spend) VALUES (UUID(),?,?,?,CURDATE(),1,?) ON DUPLICATE KEY UPDATE clicks=clicks+1, spend=spend+?`,
+    db.query(`INSERT INTO ad_daily_stats (id, ad_id, campaign_id, account_id, stat_date, clicks, spend) VALUES (UUID(),?,?,?,CURRENT_DATE,1,?) 
       [req.params.adId, ad.campaign_id, ad.account_id, cost, cost]).catch(()=>{});
     res.json({ success: true });
   } catch (e) { res.json({ success: false }); }
@@ -305,7 +305,7 @@ r.post('/hide/:adId', async (req, res) => {
   try {
     const { user_id, reason = 'not_relevant' } = req.body;
     if (!user_id) return res.json({ success: false });
-    await db.query('INSERT IGNORE INTO hidden_ads (ad_id, user_id, reason) VALUES (?,?,?)', [req.params.adId, user_id, reason]);
+    await db.query('INSERT INTO hidden_ads (ad_id, user_id, reason) VALUES (?,?,?)', [req.params.adId, user_id, reason]);
     res.json({ success: true });
   } catch (e) { res.json({ success: false }); }
 });
@@ -358,7 +358,7 @@ r.get('/:id/comments', async (req, res) => {
       SELECT c.*, u.username, u.display_name, u.avatar_url, u.is_verified,
         (SELECT COUNT(*) FROM likes WHERE target_type='comment' AND target_id=c.id) AS likes_count
       FROM comments c JOIN users u ON c.user_id=u.id
-      WHERE c.target_type='ad' AND c.target_id=? AND c.is_deleted=0
+      WHERE c.target_type='ad' AND c.target_id=? AND c.is_deleted=FALSE
       ORDER BY c.created_at DESC LIMIT ? OFFSET ?
     `, [req.params.id, parseInt(limit), parseInt(offset)]);
     res.json({ success: true, comments });
@@ -441,9 +441,9 @@ r.get('/dashboard', authenticate, async (req, res) => {
     if (!account) return res.json({ success: true, has_account: false });
     const [campaigns, statsToday, statsWeek, topCampaigns, recentBilling] = await Promise.all([
       db.queryOne("SELECT COUNT(*) AS total, SUM(CASE WHEN status='active' THEN 1 ELSE 0 END) AS active, SUM(CASE WHEN status='paused' THEN 1 ELSE 0 END) AS paused, SUM(CASE WHEN status='draft' THEN 1 ELSE 0 END) AS draft FROM ad_campaigns WHERE account_id=?", [account.id]),
-      db.queryOne("SELECT COALESCE(SUM(impressions),0) AS impressions, COALESCE(SUM(clicks),0) AS clicks, COALESCE(SUM(spend),0) AS spend, COALESCE(SUM(conversions),0) AS conversions FROM ad_daily_stats WHERE account_id=? AND stat_date=CURDATE()", [account.id]),
-      db.queryOne("SELECT COALESCE(SUM(impressions),0) AS impressions, COALESCE(SUM(clicks),0) AS clicks, COALESCE(SUM(spend),0) AS spend FROM ad_daily_stats WHERE account_id=? AND stat_date >= DATE_SUB(CURDATE(),INTERVAL 7 DAY)", [account.id]),
-      db.query("SELECT c.id, c.name, c.objective, c.status, SUM(s.impressions) AS impressions, SUM(s.clicks) AS clicks, SUM(s.spend) AS spend FROM ad_campaigns c JOIN ad_daily_stats s ON c.id=s.campaign_id WHERE c.account_id=? AND s.stat_date >= DATE_SUB(CURDATE(),INTERVAL 7 DAY) GROUP BY c.id ORDER BY spend DESC LIMIT 5", [account.id]),
+      db.queryOne("SELECT COALESCE(SUM(impressions),0) AS impressions, COALESCE(SUM(clicks),0) AS clicks, COALESCE(SUM(spend),0) AS spend, COALESCE(SUM(conversions),0) AS conversions FROM ad_daily_stats WHERE account_id=? AND stat_date=CURRENT_DATE", [account.id]),
+      db.queryOne("SELECT COALESCE(SUM(impressions),0) AS impressions, COALESCE(SUM(clicks),0) AS clicks, COALESCE(SUM(spend),0) AS spend FROM ad_daily_stats WHERE account_id=? AND stat_date >= CURRENT_DATE - INTERVAL '7 day'", [account.id]),
+      db.query("SELECT c.id, c.name, c.objective, c.status, SUM(s.impressions) AS impressions, SUM(s.clicks) AS clicks, SUM(s.spend) AS spend FROM ad_campaigns c JOIN ad_daily_stats s ON c.id=s.campaign_id WHERE c.account_id=? AND s.stat_date >= CURRENT_DATE - INTERVAL '7 day' GROUP BY c.id ORDER BY spend DESC LIMIT 5", [account.id]),
       db.query('SELECT * FROM ad_billing WHERE account_id=? ORDER BY created_at DESC LIMIT 5', [account.id]),
     ]);
     res.json({ success: true, account, campaigns, stats_today: statsToday, stats_week: statsWeek, top_campaigns: topCampaigns, recent_billing: recentBilling });
@@ -470,7 +470,7 @@ r.post('/cron/expire-campaigns', async (req, res) => {
       SET status='completed'
       WHERE status='active'
         AND end_date IS NOT NULL
-        AND end_date < CURDATE()
+        AND end_date < CURRENT_DATE
     `);
     // Also pause campaigns that exceeded budget
     await db.query(`

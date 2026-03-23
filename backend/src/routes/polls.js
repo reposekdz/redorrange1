@@ -46,7 +46,7 @@ r.post('/:pollId/vote', authenticate, async (req, res) => {
     const existing = await db.queryOne('SELECT id FROM poll_votes WHERE poll_id=? AND user_id=?', [req.params.pollId, req.userId]);
     if (existing && !poll.multiple) return res.status(400).json({ success: false, message: 'Already voted' });
     for (const oid of ids) {
-      await db.query('INSERT IGNORE INTO poll_votes (poll_id, option_id, user_id) VALUES (?,?,?)', [req.params.pollId, oid, req.userId]);
+      await db.query('INSERT INTO poll_votes (poll_id, option_id, user_id) VALUES (?,?,?)', [req.params.pollId, oid, req.userId]);
       await db.query('UPDATE poll_options SET votes=votes+1 WHERE id=?', [oid]);
     }
     const options = await db.query('SELECT id, text, votes FROM poll_options WHERE poll_id=? ORDER BY order_idx', [req.params.pollId]);
