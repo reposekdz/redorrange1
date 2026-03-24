@@ -9,6 +9,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../../core/theme/app_theme.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/services/api_service.dart';
+import '../../ads/widgets/ad_widgets.dart';
 import '../../../shared/widgets/app_avatar.dart';
 import '../../../shared/utils/format_utils.dart';
 
@@ -207,7 +208,7 @@ class _CMTS extends ConsumerState<_CmtPanel> {
         Container(padding: EdgeInsets.only(left: 12, right: 8, top: 8, bottom: MediaQuery.of(context).viewInsets.bottom + 10), decoration: const BoxDecoration(border: Border(top: BorderSide(color: Colors.white12))), child: Row(children: [
           AppAvatar(url: me?.avatarUrl, size: 30, username: me?.username),
           const SizedBox(width: 8),
-          Expanded(child: TextField(_ctrl, style: const TextStyle(color: Colors.white, fontSize: 14), decoration: const InputDecoration(hintText: 'Add a comment...', hintStyle: TextStyle(color: Colors.grey), border: InputBorder.none, filled: false))),
+          Expanded(child: TextField(controller: _ctrl, style: const TextStyle(color: Colors.white, fontSize: 14), decoration: const InputDecoration(hintText: 'Add a comment...', hintStyle: TextStyle(color: Colors.grey), border: InputBorder.none, filled: false))),
           TextButton(onPressed: _s ? null : _send, child: Text(_s ? '...' : 'Post', style: const TextStyle(color: AppTheme.orange, fontWeight: FontWeight.w700))),
         ])),
       ]));

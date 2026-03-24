@@ -45,7 +45,7 @@ class _S extends ConsumerState<NewChatScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('New Message', style: TextStyle(fontWeight: FontWeight.w800))),
       body: Column(children: [
-        Padding(padding: const EdgeInsets.all(12), child: TextField(_ctrl, onChanged: _onSearch, decoration: InputDecoration(hintText: 'Search people...', prefixIcon: _searching ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.orange))) : const Icon(Icons.search_rounded, size: 20), suffixIcon: _ctrl.text.isNotEmpty ? IconButton(icon: const Icon(Icons.close_rounded, size: 18), onPressed: () { _ctrl.clear(); _onSearch(''); }) : null))),
+        Padding(padding: const EdgeInsets.all(12), child: TextField(controller: _ctrl, onChanged: _onSearch, decoration: InputDecoration(hintText: 'Search people...', prefixIcon: _searching ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.orange))) : const Icon(Icons.search_rounded, size: 20), suffixIcon: _ctrl.text.isNotEmpty ? IconButton(icon: const Icon(Icons.close_rounded, size: 18), onPressed: () { _ctrl.clear(); _onSearch(''); }) : null))),
         _l ? const Center(child: CircularProgressIndicator(color: AppTheme.orange))
           : list.isEmpty ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               const Icon(Icons.person_search_rounded, size: 64, color: Colors.grey), const SizedBox(height: 12),

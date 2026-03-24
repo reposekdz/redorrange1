@@ -83,9 +83,9 @@ class _BalanceTab extends StatelessWidget {
       const SizedBox(height: 16),
       Row(children: [
         Expanded(child: _WS(FormatUtils.count(w['total_earned'] as int? ?? 0), 'Earned', Icons.trending_up_rounded)),
-        Container(width: 1, height: 40, color: Colors.white20),
+        Container(width: 1, height: 40, color: Colors.white.withOpacity(0.2)),
         Expanded(child: _WS(FormatUtils.count(w['locked_coins'] as int? ?? 0), 'In Escrow', Icons.lock_rounded)),
-        Container(width: 1, height: 40, color: Colors.white20),
+        Container(width: 1, height: 40, color: Colors.white.withOpacity(0.2)),
         Expanded(child: _WS(FormatUtils.count(w['total_spent'] as int? ?? 0), 'Spent', Icons.shopping_bag_rounded)),
       ]),
     ])),
@@ -101,7 +101,7 @@ class _BalanceTab extends StatelessWidget {
     ]),
     const SizedBox(height: 16),
     if (sub != null)
-      Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFF9C27B0), Color(0xFF673AB7)]), borderRadius: BorderRadius.circular(14)), child: Row(children: [const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 24), const SizedBox(width: 10), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(sub['plan_name']??'Premium', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14)), Text('Expires ${sub['expires_at']?.toString().substring(0,10)??'—'}', style: const TextStyle(color: Colors.white60, fontSize: 11))])), TextButton(onPressed: () => context.push('/subscription'), child: const Text('Manage', style: TextStyle(color: Colors.white70, fontSize: 12)))]))
+      Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFF9C27B0), Color(0xFF673AB7)]), borderRadius: BorderRadius.circular(14)), child: Row(children: [const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 24), const SizedBox(width: 10), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(sub!['plan_name']??'Premium', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14)), Text('Expires ${sub!['expires_at']?.toString().substring(0,10)??'—'}', style: const TextStyle(color: Colors.white60, fontSize: 11))])), TextButton(onPressed: () => context.push('/subscription'), child: const Text('Manage', style: TextStyle(color: Colors.white70, fontSize: 12)))]))
     else
       GestureDetector(onTap: () => context.push('/subscription'), child: Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFF9C27B0), Color(0xFF673AB7)]), borderRadius: BorderRadius.circular(14)), child: const Row(children: [Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 24), SizedBox(width: 10), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Go Premium', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14)), Text('Verified badge + 500 coins/mo + No ads', style: TextStyle(color: Colors.white70, fontSize: 11))])), Padding(padding: EdgeInsets.all(8), child: Text('From \$4.99', style: TextStyle(color: Colors.white70, fontSize: 12)))]))),
     const SizedBox(height: 16),

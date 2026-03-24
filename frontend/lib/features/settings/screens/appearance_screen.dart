@@ -22,7 +22,7 @@ class _S extends ConsumerState<AppearanceScreen> {
       body: ListView(padding: const EdgeInsets.all(16), children: [
         const Text('Theme', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
         const SizedBox(height: 10),
-        Row(children: _themes.map(((mode, label, icon)) {
+        Row(children: _themes.map((e) { final mode = e.$1; final label = e.$2; final icon = e.$3;
           final sel = themeMode == mode;
           return Expanded(child: GestureDetector(onTap: () => ref.read(themeModeProvider.notifier).set(mode), child: AnimatedContainer(duration: const Duration(milliseconds: 200), margin: const EdgeInsets.symmetric(horizontal: 4), padding: const EdgeInsets.symmetric(vertical: 14), decoration: BoxDecoration(color: sel ? AppTheme.orange : (dark ? AppTheme.dCard : Colors.white), borderRadius: BorderRadius.circular(14), border: Border.all(color: sel ? AppTheme.orange : Colors.transparent, width: 2)),
             child: Column(children: [Icon(icon, color: sel ? Colors.white : null, size: 26), const SizedBox(height: 6), Text(label, style: TextStyle(color: sel ? Colors.white : null, fontWeight: sel ? FontWeight.w700 : FontWeight.w500, fontSize: 12), textAlign: TextAlign.center)]))));

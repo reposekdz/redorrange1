@@ -13,6 +13,7 @@ import '../../../core/services/api_service.dart';
 import '../../../core/services/socket_service.dart';
 import '../../../shared/widgets/app_avatar.dart';
 import '../../../shared/utils/format_utils.dart';
+import '../../ads/widgets/ad_widgets.dart';
 
 class StoryViewerScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -179,7 +180,7 @@ class _S extends ConsumerState<StoryViewerScreen> {
 
           // Reply input
           if (_showReply) Positioned(bottom: 0, left: 0, right: 0, child: SafeArea(top: false, child: Container(color: Colors.black87, padding: const EdgeInsets.fromLTRB(12, 10, 12, 10), child: Row(children: [
-            Expanded(child: TextField(_replyCtrl, autofocus: true, style: const TextStyle(color: Colors.white), decoration: InputDecoration(hintText: 'Reply to ${s['username'] ?? ''}...', hintStyle: const TextStyle(color: Colors.grey), filled: true, fillColor: Colors.white12, border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none), contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10)))),
+            Expanded(child: TextField(controller: _replyCtrl, autofocus: true, style: const TextStyle(color: Colors.white), decoration: InputDecoration(hintText: 'Reply to ${s['username'] ?? ''}...', hintStyle: const TextStyle(color: Colors.grey), filled: true, fillColor: Colors.white12, border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none), contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10)))),
             const SizedBox(width: 8),
             GestureDetector(onTap: () => _sendReply(_replyCtrl.text), child: Container(width: 44, height: 44, decoration: const BoxDecoration(color: AppTheme.orange, shape: BoxShape.circle), child: const Icon(Icons.send_rounded, color: Colors.white, size: 20))),
           ])))),

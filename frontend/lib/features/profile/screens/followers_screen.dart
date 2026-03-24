@@ -51,7 +51,7 @@ class _ULS extends ConsumerState<_UserList> {
     final filtered = _q.isEmpty ? widget.users : widget.users.where((u) => (u['display_name'] ?? u['username'] ?? '').toString().toLowerCase().contains(_q.toLowerCase())).toList();
     if (widget.users.isEmpty) return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.people_outline_rounded, size: 64, color: Colors.grey), const SizedBox(height: 12), Text(widget.emptyMsg, style: const TextStyle(color: Colors.grey, fontSize: 15))]));
     return Column(children: [
-      Padding(padding: const EdgeInsets.fromLTRB(12,10,12,4), child: TextField(_c, onChanged: (v) => setState(() => _q = v), decoration: const InputDecoration(hintText: 'Search...', prefixIcon: Icon(Icons.search_rounded, size: 20), isDense: true))),
+      Padding(padding: const EdgeInsets.fromLTRB(12,10,12,4), child: TextField(controller: _c, onChanged: (v) => setState(() => _q = v), decoration: const InputDecoration(hintText: 'Search...', prefixIcon: Icon(Icons.search_rounded, size: 20), isDense: true))),
       Expanded(child: ListView.builder(itemCount: filtered.length, itemBuilder: (_, i) {
         final u = filtered[i]; final isMe = u['id'] == me?.id;
         return ListTile(contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),

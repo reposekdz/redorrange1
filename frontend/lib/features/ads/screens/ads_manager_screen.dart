@@ -238,8 +238,7 @@ class _SummaryCard extends StatelessWidget {
 class _KpiCard extends StatelessWidget {
   final String label, value; final IconData icon; final Color color; final String? subtitle; final bool dark;
   const _KpiCard(this.label, this.value, this.icon, this.color, this.subtitle, this.dark);
-  @override Widget build(BuildContext _) => Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: dark ? AppTheme.dCard : Colors.white, borderRadius: BorderRadius.circular(14)), child: Row(children: [Container(width: 42, height: 42, decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: color, size: 22)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(value, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: color)), Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)), if (subtitle != null) Text(subtitle!, style: const TextStyle(fontSize: 9, color: Colors.grey))]))]);
-}
+  @override Widget build(BuildContext _) => Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: dark ? AppTheme.dCard : Colors.white, borderRadius: BorderRadius.circular(14)), child: Row(children: [Container(width: 42, height: 42, decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: color, size: 22)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(value, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: color)), Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)), if (subtitle != null) Text(subtitle!, style: const TextStyle(fontSize: 9, color: Colors.grey))]))]));}
 
 class _SectionHeader extends StatelessWidget {
   final String text; final Widget? action;
@@ -431,7 +430,7 @@ class _ATS extends ConsumerState<_AnalyticsTab> {
           const SizedBox(height: 14),
           SizedBox(height: 120, child: BarChart(BarChartData(
             gridData: const FlGridData(show: false),
-            titlesData: FlTitlesData(show: true, bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, _) { final days = ['M','T','W','T','F','S','S']; return Text(days[v.toInt() % 7], style: const TextStyle(fontSize: 10, color: Colors.grey)); }))), leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)), topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)), rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false))),
+            titlesData: FlTitlesData(show: true, bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, _) { final days = ['M','T','W','T','F','S','S']; return Text(days[v.toInt() % 7], style: const TextStyle(fontSize: 10, color: Colors.grey)); })), leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)), topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)), rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false))),
             borderData: FlBorderData(show: false),
             barGroups: List.generate(7, (i) => BarChartGroupData(x: i, barRods: [BarChartRodData(toY: (clk / 7 * (0.6 + i * 0.06)).clamp(0, clk.toDouble()), color: AppTheme.orange, width: 16, borderRadius: const BorderRadius.vertical(top: Radius.circular(4)))])),
           ))),
@@ -465,7 +464,7 @@ class _ATS extends ConsumerState<_AnalyticsTab> {
 class _MetricBox extends StatelessWidget {
   final String l, v; final IconData i; final Color c; final bool dark;
   const _MetricBox(this.l, this.v, this.i, this.c, this.dark);
-  @override Widget build(BuildContext _) => Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: dark ? AppTheme.dCard : Colors.white, borderRadius: BorderRadius.circular(14)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: c, size: 18), const SizedBox(height: 4), Text(v, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: c)), const SizedBox(height: 2), Text(l, style: const TextStyle(fontSize: 10, color: Colors.grey))]);
+  @override Widget build(BuildContext _) => Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: dark ? AppTheme.dCard : Colors.white, borderRadius: BorderRadius.circular(14)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: c, size: 18), const SizedBox(height: 4), Text(v, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: c)), const SizedBox(height: 2), Text(l, style: const TextStyle(fontSize: 10, color: Colors.grey))]));
 }
 class _Legend extends StatelessWidget {
   final Color c; final String l;

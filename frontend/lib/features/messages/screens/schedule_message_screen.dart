@@ -51,7 +51,7 @@ class _S extends ConsumerState<ScheduleMessageScreen> {
         Container(color: dark ? AppTheme.dCard : Colors.white, padding: const EdgeInsets.all(14), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('Schedule a message', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
           const SizedBox(height: 10),
-          TextField(_ctrl, maxLines: 3, decoration: const InputDecoration(hintText: 'Type your message...', border: OutlineInputBorder())),
+          TextField(controller: _ctrl, maxLines: 3, decoration: const InputDecoration(hintText: 'Type your message...', border: OutlineInputBorder())),
           const SizedBox(height: 10),
           GestureDetector(onTap: _pickDateTime, child: Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12), decoration: BoxDecoration(border: Border.all(color: AppTheme.orange), borderRadius: BorderRadius.circular(10)), child: Row(children: [const Icon(Icons.schedule_rounded, color: AppTheme.orange, size: 20), const SizedBox(width: 8), Text(_dt == null ? 'Select date & time' : fmt.format(_dt!), style: TextStyle(color: _dt == null ? Colors.grey : AppTheme.orange, fontWeight: FontWeight.w600))]))),
           const SizedBox(height: 10),

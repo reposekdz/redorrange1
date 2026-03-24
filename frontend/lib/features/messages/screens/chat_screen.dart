@@ -35,7 +35,7 @@ class _MN extends StateNotifier<List<MessageModel>> {
       final m = MessageModel.fromJson(Map<String,dynamic>.from(d['message'] as Map));
       state = [...state, m];
       // Deliver receipt back to sender
-      _ref.read(socketServiceProvider).messageDelivered(m.id, m.senderId);
+      _ref.read(socketServiceProvider).messageDelivered(m.id, m.senderId, _cid);
     });
     s.on('message_deleted', (d) {
       if (d is! Map || d['conversation_id'] != _cid) return;

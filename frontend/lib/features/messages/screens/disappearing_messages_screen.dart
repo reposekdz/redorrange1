@@ -21,14 +21,14 @@ class _S extends ConsumerState<DisappearingMessagesScreen> {
       appBar: AppBar(title: const Text('Disappearing Messages', style: TextStyle(fontWeight: FontWeight.w800))),
       body: Column(children: [
         Container(margin: const EdgeInsets.all(14), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: dark ? AppTheme.dCard : AppTheme.orangeSurf, borderRadius: BorderRadius.circular(12)), child: const Row(children: [Icon(Icons.timer_rounded, color: AppTheme.orange, size: 22), SizedBox(width: 10), Expanded(child: Text('Messages will automatically disappear after the timer. Both sides are affected.', style: TextStyle(color: AppTheme.orangeDark, fontSize: 13, height: 1.4)))])),
-        Expanded(child: ListView(children: _opts.map(((secs, label)) => RadioListTile<int>(
+        Expanded(child: ListView(children: _opts.map((e) { final secs = e.$1; final label = e.$2; return RadioListTile<int>(
           value: secs, groupValue: _timer,
           onChanged: (v) => setState(() => _timer = v!),
           title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
           subtitle: secs > 0 ? Text('Messages delete after $label', style: const TextStyle(fontSize: 12)) : const Text('Messages stay forever', style: TextStyle(fontSize: 12)),
           activeColor: AppTheme.orange,
           secondary: Container(width: 42, height: 42, decoration: BoxDecoration(color: AppTheme.orangeSurf, borderRadius: BorderRadius.circular(12)), child: Icon(secs == 0 ? Icons.timer_off_rounded : Icons.timer_rounded, color: AppTheme.orange, size: 22)),
-        )).toList())),
+        ); }).toList())),
         Padding(padding: const EdgeInsets.all(14), child: SizedBox(width: double.infinity, child: ElevatedButton(
           onPressed: _saving ? null : () async {
             setState(() => _saving = true);

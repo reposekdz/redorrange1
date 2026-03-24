@@ -44,7 +44,7 @@ class SettingsScreen extends ConsumerWidget {
 
         // ── Account
         _Section('ACCOUNT', [
-          _Tile(Iconsax.profile_edit, 'Edit Profile',        AppTheme.orange,            () => context.push('/edit-profile')),
+          _Tile(Iconsax.user_edit, 'Edit Profile',        AppTheme.orange,            () => context.push('/edit-profile')),
           _Tile(Iconsax.chart_2,      'Analytics',           const Color(0xFF2196F3),    () => context.push('/analytics')),
           _Tile(Iconsax.bookmark,     'Saved Posts',         const Color(0xFF9C27B0),    () => context.push('/saved')),
           _Tile(Iconsax.clock,        'Activity Log',        const Color(0xFF607D8B),    () => context.push('/activity-log')),

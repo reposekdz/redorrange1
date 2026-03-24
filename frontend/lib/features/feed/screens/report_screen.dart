@@ -22,7 +22,7 @@ class _S extends ConsumerState<ReportScreen> {
         Container(margin: const EdgeInsets.all(14), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: dark ? AppTheme.dCard : AppTheme.lInput, borderRadius: BorderRadius.circular(12)), child: const Text('Your report is anonymous. We review all reports and take action on content that violates our Community Guidelines.', style: TextStyle(fontSize: 13, height: 1.4))),
         Expanded(child: ListView(children: [
           ..._reasons.map((r) => RadioListTile<String>(value: r, groupValue: _reason, onChanged: (v) => setState(() => _reason = v), title: Text(r, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)), activeColor: AppTheme.orange)),
-          if (_reason == 'Other') Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 8), child: TextField(_detailCtrl, maxLines: 4, maxLength: 500, decoration: const InputDecoration(hintText: 'Provide more details...', border: OutlineInputBorder()))),
+          if (_reason == 'Other') Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 8), child: TextField(controller: _detailCtrl, maxLines: 4, maxLength: 500, decoration: const InputDecoration(hintText: 'Provide more details...', border: OutlineInputBorder()))),
         ])),
         Padding(padding: const EdgeInsets.all(14), child: SizedBox(width: double.infinity, child: ElevatedButton(
           onPressed: (_reason == null || _submitting) ? null : () async {

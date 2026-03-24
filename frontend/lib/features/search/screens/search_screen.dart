@@ -163,7 +163,7 @@ class _HomeState extends StatelessWidget {
       // Trending
       const Text('Trending', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
       const SizedBox(height: 12),
-      ...trending.take(8).asMap().entries.map((e) {
+      ...trending.take(8).toList().asMap().entries.map((e) {
         final h = e.value;
         return InkWell(
           onTap: () => context.push('/hashtag/${h['name']}'),

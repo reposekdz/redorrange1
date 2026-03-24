@@ -104,7 +104,7 @@ class _S extends ConsumerState<MarketplaceCreateScreen> {
         Row(children: [
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             _Label('Price'), const SizedBox(height: 6),
-            TextField(controller: _priceCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(hintText: '0.00', prefixText: '$ ')),
+            TextField(controller: _priceCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(hintText: '0.00', prefixText: r'$ ')),
           ])),
           const SizedBox(width: 12),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

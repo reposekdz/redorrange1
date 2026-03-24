@@ -60,7 +60,7 @@ import '../../features/settings/screens/storage_screen.dart';
 import '../../features/settings/screens/app_language_screen.dart';
 import '../../features/settings/screens/appearance_screen.dart';
 import '../../features/marketplace/screens/marketplace_screen.dart';
-import '../../features/marketplace/screens/marketplace_detail_screen.dart';
+import '../../features/marketplace/screens/marketplace_detail_screen.dart' hide MyListingsScreen;
 import '../../features/marketplace/screens/marketplace_orders_screen.dart';
 import '../../features/marketplace/screens/marketplace_create_screen.dart';
 import '../../features/channels/screens/channels_screen.dart';
@@ -126,7 +126,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/new-chat',       builder: (_, __) => const NewChatScreen()),
       GoRoute(path: '/new-group',      builder: (_, __) => const GroupCreateScreen()),
       GoRoute(path: '/chat-info/:id',  builder: (_, s) => ChatInfoScreen(convId: s.pathParameters['id']!)),
-      GoRoute(path: '/chat-media/:id', builder: (_, s) => ChatMediaScreen(convId: s.pathParameters['id']!, displayName: (s.extra as Map?)?.['name'] as String? ?? 'Chat')),
+      GoRoute(path: '/chat-media/:id', builder: (_, s) => ChatMediaScreen(convId: s.pathParameters['id']!, displayName: (s.extra as Map?)?['name'] as String? ?? 'Chat')),
       GoRoute(path: '/starred-messages', builder: (_, __) => const StarredMessagesScreen()),
 
       GoRoute(path: '/post/:id',         builder: (_, s) => PostDetailScreen(postId: s.pathParameters['id']!)),
@@ -142,7 +142,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       GoRoute(path: '/profile/:id',     builder: (_, s) => ProfileScreen(userId: s.pathParameters['id']!)),
       GoRoute(path: '/edit-profile',    builder: (_, __) => const EditProfileScreen()),
-      GoRoute(path: '/followers/:id',   builder: (_, s) => FollowersScreen(userId: s.pathParameters['id']!, type: (s.extra as Map?)?.['type'] as String? ?? 'followers')),
+      GoRoute(path: '/followers/:id',   builder: (_, s) => FollowersScreen(userId: s.pathParameters['id']!, type: (s.extra as Map?)?['type'] as String? ?? 'followers')),
       GoRoute(path: '/follow-requests', builder: (_, __) => const FollowRequestsScreen()),
       GoRoute(path: '/close-friends',   builder: (_, __) => const CloseFriendsScreen()),
       GoRoute(path: '/mutual/:id',      builder: (_, s) => MutualFollowersScreen(userId: s.pathParameters['id']!)),
@@ -160,7 +160,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/hashtag/:tag', builder: (_, s) => HashtagScreen(tag: s.pathParameters['tag']!)),
       GoRoute(path: '/ads',          builder: (_, __) => const AdsManagerScreen()),
       GoRoute(path: '/ads/topup',    builder: (_, __) => const AdsTopupScreen()),
-      GoRoute(path: '/ads/campaign/:id', builder: (_, s) => CampaignDetailScreen(id: s.pathParameters['id']!)),
+      GoRoute(path: '/ads/campaign/:id', builder: (_, s) => CampaignDetailScreen(campaignId: s.pathParameters['id']!)),
       GoRoute(path: '/notifications', builder: (_, __) => const NotificationsScreen()),
       GoRoute(path: '/mentions',      builder: (_, __) => const MentionsScreen()),
 
@@ -204,8 +204,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       GoRoute(path: '/group/:id',          builder: (_, s) => GroupScreen(groupId: s.pathParameters['id']!)),
       GoRoute(path: '/group/:id/settings', builder: (_, s) => GroupSettingsScreen(groupId: s.pathParameters['id']!)),
-    ],
-
 
       GoRoute(path: '/wallet',       builder: (_, __) => const WalletScreen()),
       GoRoute(path: '/marketplace/orders', builder: (_, __) => const MarketplaceOrdersScreen()),
@@ -226,12 +224,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/escrow/:id',   builder: (_, s) => EscrowScreen()),
       GoRoute(path: '/subscription', builder: (_, __) => const SubscriptionScreen()),
       GoRoute(path: '/payouts',      builder: (_, __) => const Scaffold(body: Center(child: Text('Payouts')))),
-      GoRoute(path: '/post/:id/boost',    builder: (_, s) => BoostPostScreen(postId: s.pathParameters['id']!, postCaption: (s.extra as Map?)?.['caption'] as String? ?? '')),
+      GoRoute(path: '/post/:id/boost',    builder: (_, s) => BoostPostScreen(postId: s.pathParameters['id']!, postCaption: (s.extra as Map?)?['caption'] as String? ?? '')),
       GoRoute(path: '/post/:id/insights', builder: (_, s) => PostInsightsScreen(postId: s.pathParameters['id']!)),
       GoRoute(path: '/post/:id/reactions',builder: (_, s) => ReactionsScreen(postId: s.pathParameters['id']!)),
       GoRoute(path: '/chat/:id/disappearing', builder: (_, s) => DisappearingMessagesScreen(convId: s.pathParameters['id']!)),
       GoRoute(path: '/chat/:id/schedule', builder: (_, s) => ScheduleMessageScreen(convId: s.pathParameters['id']!)),
-
+    ],
     errorBuilder: (_, state) => Scaffold(
       appBar: AppBar(),
       body: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [

@@ -78,7 +78,7 @@ class AppTheme {
         titleTextStyle: TextStyle(color: text, fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: -0.2),
         iconTheme: IconThemeData(color: text),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: card, elevation: 0, margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
@@ -141,10 +141,7 @@ class RedOrrangeColors extends ThemeExtension<RedOrrangeColors> {
 
   @override
   RedOrrangeColors copyWith({Color? msgOwn, Color? msgOther, Color? msgOwnText, Color? msgOtherText, Color? storyRing, Color? online, Color? unread}) =>
-    RedOrrangeColors(isDark: false)
-      ..._copy(msgOwn ?? this.msgOwn, msgOther ?? this.msgOther, msgOwnText ?? this.msgOwnText, msgOtherText ?? this.msgOtherText, storyRing ?? this.storyRing, online ?? this.online, unread ?? this.unread);
-
-  RedOrrangeColors _copy(Color a, Color b, Color c, Color d, Color e, Color f, Color g) => this;
+    RedOrrangeColors(isDark: false);
 
   @override
   RedOrrangeColors lerp(ThemeExtension<RedOrrangeColors>? other, double t) => this;

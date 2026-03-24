@@ -68,9 +68,9 @@ class _S extends ConsumerState<GroupCreateScreen> {
             ])),
           const SizedBox(width: 14),
           Expanded(child: Column(children: [
-            TextField(_nameCtrl, decoration: const InputDecoration(hintText: 'Group name', border: InputBorder.none, filled: false)),
+            TextField(controller: _nameCtrl, decoration: const InputDecoration(hintText: 'Group name', border: InputBorder.none, filled: false)),
             const Divider(height: 1),
-            TextField(_descCtrl, decoration: const InputDecoration(hintText: 'Description (optional)', border: InputBorder.none, filled: false)),
+            TextField(controller: _descCtrl, decoration: const InputDecoration(hintText: 'Description (optional)', border: InputBorder.none, filled: false)),
           ])),
         ])),
 

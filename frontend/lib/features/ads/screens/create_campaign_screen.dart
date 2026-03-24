@@ -132,7 +132,7 @@ class _S extends ConsumerState<CreateCampaignScreen> {
         leading: IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: _back),
         title: const Text('Create Campaign', style: TextStyle(fontWeight: FontWeight.w800)),
         bottom: PreferredSize(preferredSize: const Size.fromHeight(50), child: Padding(padding: const EdgeInsets.fromLTRB(14, 0, 14, 12), child: Column(children: [
-          Row(children: steps.asMap().entries.map((e) => Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 3), child: Column(children: [AnimatedContainer(duration: const Duration(milliseconds: 250), height: 4, decoration: BoxDecoration(color: e.key <= _step ? AppTheme.orange : (dark ? AppTheme.dCard : Colors.grey.shade200), borderRadius: BorderRadius.circular(2))), const SizedBox(height: 4), Text(e.value, style: TextStyle(fontSize: 9, fontWeight: e.key == _step ? FontWeight.w700 : FontWeight.w400, color: e.key <= _step ? AppTheme.orange : Colors.grey))]))).toList()),
+          Row(children: steps.asMap().entries.map((e) => Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 3), child: Column(children: [AnimatedContainer(duration: const Duration(milliseconds: 250), height: 4, decoration: BoxDecoration(color: e.key <= _step ? AppTheme.orange : (dark ? AppTheme.dCard : Colors.grey.shade200), borderRadius: BorderRadius.circular(2))), const SizedBox(height: 4), Text(e.value, style: TextStyle(fontSize: 9, fontWeight: e.key == _step ? FontWeight.w700 : FontWeight.w400, color: e.key <= _step ? AppTheme.orange : Colors.grey))])))).toList()),
         ]))),
       ),
       body: PageView(controller: _pc, physics: const NeverScrollableScrollPhysics(), children: [
@@ -165,19 +165,19 @@ class _Step1 extends StatelessWidget {
     const SizedBox(height: 4),
     const Text('Choose the objective that best describes what you want to achieve.', style: TextStyle(color: Colors.grey, fontSize: 13, height: 1.5)),
     const SizedBox(height: 16),
-    TextField(initialValue: name, onChanged: onName, decoration: const InputDecoration(labelText: 'Campaign Name *', hintText: 'e.g. Summer Sale 2025', prefixIcon: Icon(Icons.edit_rounded, size: 20))),
+    TextFormField(initialValue: name, onChanged: onName, decoration: const InputDecoration(labelText: 'Campaign Name *', hintText: 'e.g. Summer Sale 2025', prefixIcon: Icon(Icons.edit_rounded, size: 20))),
     const SizedBox(height: 16),
-    ...objectives.map(((id, icon, name, desc)) => GestureDetector(
+    ...objectives.map((e) { final id = e.$1; final icon = e.$2; final objName = e.$3; final desc = e.$4; return GestureDetector(
       onTap: () => onSelect(id),
       child: AnimatedContainer(duration: const Duration(milliseconds: 150), margin: const EdgeInsets.only(bottom: 10), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: selected == id ? AppTheme.orange : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(14), border: Border.all(color: selected == id ? AppTheme.orange : Colors.transparent, width: 2), boxShadow: [BoxShadow(color: selected == id ? AppTheme.orange.withOpacity(0.25) : Colors.black.withOpacity(0.04), blurRadius: 8)]),
         child: Row(children: [
           Container(width: 48, height: 48, decoration: BoxDecoration(color: selected == id ? Colors.white24 : AppTheme.orangeSurf, borderRadius: BorderRadius.circular(13)), child: Icon(icon, color: selected == id ? Colors.white : AppTheme.orange, size: 24)),
           const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(name, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: selected == id ? Colors.white : null)), const SizedBox(height: 2), Text(desc, style: TextStyle(fontSize: 12, color: selected == id ? Colors.white70 : Colors.grey))])),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(objName, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: selected == id ? Colors.white : null)), const SizedBox(height: 2), Text(desc, style: TextStyle(fontSize: 12, color: selected == id ? Colors.white70 : Colors.grey))])),
           if (selected == id) const Icon(Icons.check_circle_rounded, color: Colors.white, size: 22),
         ]),
       ),
-    )),
+    ); }),
   ]);
 }
 
@@ -212,21 +212,21 @@ class _Step2 extends StatelessWidget {
     ]),
 
     _Label('Gender'),
-    Wrap(spacing: 8, children: [('all','All Genders'), ('male','Male'), ('female','Female')].map(((v,l)) => GestureDetector(onTap: () => onGender([v]), child: AnimatedContainer(duration: const Duration(milliseconds: 150), padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9), decoration: BoxDecoration(color: genders.contains(v) ? AppTheme.orange : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(20)), child: Text(l, style: TextStyle(color: genders.contains(v) ? Colors.white : null, fontWeight: FontWeight.w600))))).toList()),
+    Wrap(spacing: 8, children: [('all','All Genders'), ('male','Male'), ('female','Female')].map((e) { final v = e.$1; final l = e.$2; return GestureDetector(onTap: () => onGender([v]), child: AnimatedContainer(duration: const Duration(milliseconds: 150), padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9), decoration: BoxDecoration(color: genders.contains(v) ? AppTheme.orange : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(20)), child: Text(l, style: TextStyle(color: genders.contains(v) ? Colors.white : null, fontWeight: FontWeight.w600)))); }).toList()),
     const SizedBox(height: 14),
 
     _Label('Interests'),
-    Wrap(spacing: 8, runSpacing: 8, children: _interestList.map(((id, name)) => GestureDetector(
+    Wrap(spacing: 8, runSpacing: 8, children: _interestList.map((e) { final id = e.$1; final intName = e.$2; return GestureDetector(
       onTap: () { final list = List<String>.from(interests); list.contains(id) ? list.remove(id) : list.add(id); onInterests(list); },
-      child: AnimatedContainer(duration: const Duration(milliseconds: 150), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7), decoration: BoxDecoration(color: interests.contains(id) ? AppTheme.orange : AppTheme.orangeSurf, borderRadius: BorderRadius.circular(20)), child: Text(name, style: TextStyle(color: interests.contains(id) ? Colors.white : AppTheme.orange, fontWeight: FontWeight.w600, fontSize: 12))),
-    )).toList()),
+      child: AnimatedContainer(duration: const Duration(milliseconds: 150), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7), decoration: BoxDecoration(color: interests.contains(id) ? AppTheme.orange : AppTheme.orangeSurf, borderRadius: BorderRadius.circular(20)), child: Text(intName, style: TextStyle(color: interests.contains(id) ? Colors.white : AppTheme.orange, fontWeight: FontWeight.w600, fontSize: 12))),
+    ); }).toList()),
     const SizedBox(height: 14),
 
     _Label('Platforms'),
-    Wrap(spacing: 8, runSpacing: 8, children: [('all','All',Icons.devices_rounded), ('android','Android',Icons.phone_android_rounded), ('ios','iOS',Icons.phone_iphone_rounded), ('web','Web',Icons.language_rounded)].map(((v, l, i)) => GestureDetector(
+    Wrap(spacing: 8, runSpacing: 8, children: [('all','All',Icons.devices_rounded), ('android','Android',Icons.phone_android_rounded), ('ios','iOS',Icons.phone_iphone_rounded), ('web','Web',Icons.language_rounded)].map((e) { final v = e.$1; final l = e.$2; final i = e.$3; return GestureDetector(
       onTap: () { if (v=='all') { onPlatforms(['all']); } else { final list = List<String>.from(platforms)..remove('all'); list.contains(v) ? list.remove(v) : list.add(v); onPlatforms(list.isEmpty ? ['all'] : list); } },
       child: AnimatedContainer(duration: const Duration(milliseconds: 150), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7), decoration: BoxDecoration(color: platforms.contains(v) ? AppTheme.orange : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(20)), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(i, size: 14, color: platforms.contains(v) ? Colors.white : Colors.grey), const SizedBox(width: 5), Text(l, style: TextStyle(color: platforms.contains(v) ? Colors.white : null, fontWeight: FontWeight.w600, fontSize: 12))]))
-    )).toList()),
+    ); }).toList()),
   ]);
 
   static String _fmt(int n) => n >= 1000 ? '${(n/1000).toStringAsFixed(0)}K' : '$n';
@@ -245,7 +245,7 @@ class _Step3 extends StatelessWidget {
     const SizedBox(height: 14),
 
     // Budget type
-    Row(children: [('daily','Daily Budget',Icons.calendar_today_rounded), ('lifetime','Lifetime Budget',Icons.calendar_month_rounded)].map(((t,l,i)) => Expanded(child: GestureDetector(onTap: () => onType(t), child: AnimatedContainer(duration: const Duration(milliseconds: 150), margin: EdgeInsets.only(right: t=='daily' ? 8 : 0), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: budgetType==t ? AppTheme.orangeSurf : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(14), border: Border.all(color: budgetType==t ? AppTheme.orange : Colors.transparent, width: 2)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: budgetType==t ? AppTheme.orange : Colors.grey, size: 22), const SizedBox(height: 6), Text(l, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: budgetType==t ? AppTheme.orange : null))]))))).toList()),
+    Row(children: [('daily','Daily Budget',Icons.calendar_today_rounded), ('lifetime','Lifetime Budget',Icons.calendar_month_rounded)].map((e) { final t = e.$1; final l = e.$2; final i = e.$3; return Expanded(child: GestureDetector(onTap: () => onType(t), child: AnimatedContainer(duration: const Duration(milliseconds: 150), margin: EdgeInsets.only(right: t=='daily' ? 8 : 0), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: budgetType==t ? AppTheme.orangeSurf : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(14), border: Border.all(color: budgetType==t ? AppTheme.orange : Colors.transparent, width: 2)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: budgetType==t ? AppTheme.orange : Colors.grey, size: 22), const SizedBox(height: 6), Text(l, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: budgetType==t ? AppTheme.orange : null))])))); }).toList()),
     const SizedBox(height: 16),
 
     // Big budget display
@@ -267,7 +267,7 @@ class _Step3 extends StatelessWidget {
 
     // Bid strategy
     _Label('Bid Strategy'),
-    ...[('lowest_cost','Lowest Cost','Recommended — get the most results','✓'), ('target_cost','Target Cost','Control average cost',''), ('manual_bid','Manual Bid','Set your maximum bid','')].map(((v,l,d,badge)) => GestureDetector(onTap: () => onBid(v), child: Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: bidStrategy==v ? AppTheme.orangeSurf : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(12), border: Border.all(color: bidStrategy==v ? AppTheme.orange : Colors.transparent)), child: Row(children: [Radio<String>(value: v, groupValue: bidStrategy, onChanged: (nv) => onBid(nv!), activeColor: AppTheme.orange), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: [Text(l, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: bidStrategy==v ? AppTheme.orange : null)), if (badge.isNotEmpty) Container(margin: const EdgeInsets.only(left: 8), padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2), decoration: BoxDecoration(color: Colors.green.withOpacity(0.15), borderRadius: BorderRadius.circular(6)), child: const Text('Recommended', style: TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w700)))]), Text(d, style: const TextStyle(fontSize: 11, color: Colors.grey))]))])))),
+    ...[('lowest_cost','Lowest Cost','Recommended — get the most results','✓'), ('target_cost','Target Cost','Control average cost',''), ('manual_bid','Manual Bid','Set your maximum bid','')].map((e) { final v = e.$1; final l = e.$2; final d = e.$3; final badge = e.$4; return GestureDetector(onTap: () => onBid(v), child: Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: bidStrategy==v ? AppTheme.orangeSurf : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(12), border: Border.all(color: bidStrategy==v ? AppTheme.orange : Colors.transparent)), child: Row(children: [Radio<String>(value: v, groupValue: bidStrategy, onChanged: (nv) => onBid(nv!), activeColor: AppTheme.orange), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: [Text(l, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: bidStrategy==v ? AppTheme.orange : null)), if (badge.isNotEmpty) Container(margin: const EdgeInsets.only(left: 8), padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2), decoration: BoxDecoration(color: Colors.green.withOpacity(0.15), borderRadius: BorderRadius.circular(6)), child: const Text('Recommended', style: TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w700)))]), Text(d, style: const TextStyle(fontSize: 11, color: Colors.grey))]))])))); }).toList(),
     const SizedBox(height: 14),
 
     _Label('Schedule'),
@@ -296,7 +296,7 @@ class _Step4 extends StatelessWidget {
     const SizedBox(height: 14),
 
     _Label('Format'),
-    SizedBox(height: 88, child: ListView(scrollDirection: Axis.horizontal, children: formats.map(((id, icon, name, desc)) => GestureDetector(onTap: () => onFormat(id), child: AnimatedContainer(duration: const Duration(milliseconds: 150), margin: const EdgeInsets.only(right: 10), width: 90, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: format==id ? AppTheme.orange : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(14), border: Border.all(color: format==id ? AppTheme.orange : Colors.transparent, width: 2)), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, color: format==id ? Colors.white : AppTheme.orange, size: 24), const SizedBox(height: 5), Text(name, style: TextStyle(color: format==id ? Colors.white : null, fontWeight: FontWeight.w700, fontSize: 12), textAlign: TextAlign.center)]))).toList())),
+    SizedBox(height: 88, child: ListView(scrollDirection: Axis.horizontal, children: formats.map((e) { final id = e.$1; final icon = e.$2; final name = e.$3; return GestureDetector(onTap: () => onFormat(id), child: AnimatedContainer(duration: const Duration(milliseconds: 150), margin: const EdgeInsets.only(right: 10), width: 90, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: format==id ? AppTheme.orange : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(14), border: Border.all(color: format==id ? AppTheme.orange : Colors.transparent, width: 2)), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, color: format==id ? Colors.white : AppTheme.orange, size: 24), const SizedBox(height: 5), Text(name, style: TextStyle(color: format==id ? Colors.white : null, fontWeight: FontWeight.w700, fontSize: 12), textAlign: TextAlign.center)]))); }).toList())),
     const SizedBox(height: 14),
 
     _Label('Media'),

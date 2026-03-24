@@ -137,8 +137,8 @@ class _OCS extends ConsumerState<_OrderCard> {
           const SizedBox(width: 10),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(o['item_title'] ?? 'Item', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
-            Text('$${o['amount_usd']} • Fee: $${o['platform_fee']}', style: const TextStyle(color: Colors.grey, fontSize: 11)),
-            if (widget.role == 'seller') Text('You receive: $${o['seller_receives']}', style: const TextStyle(color: AppTheme.orange, fontWeight: FontWeight.w600, fontSize: 12)),
+            Text('\$${o['amount_usd']} • Fee: \$${o['platform_fee']}', style: const TextStyle(color: Colors.grey, fontSize: 11)),
+            if (widget.role == 'seller') Text('You receive: \$${o['seller_receives']}', style: const TextStyle(color: AppTheme.orange, fontWeight: FontWeight.w600, fontSize: 12)),
           ])),
         ])),
 
@@ -171,7 +171,7 @@ class _OCS extends ConsumerState<_OrderCard> {
       return StatefulBuilder(builder: (_, set) => AlertDialog(
         title: const Text('Fund Escrow'),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text('Amount: $${widget.order['amount_usd']}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: AppTheme.orange)),
+          Text('Amount: \$${widget.order['amount_usd']}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: AppTheme.orange)),
           const SizedBox(height: 12),
           TextField(controller: ctrl, decoration: const InputDecoration(labelText: 'Payment Reference (optional)', hintText: 'Transaction ID, receipt...')),
           const SizedBox(height: 10),

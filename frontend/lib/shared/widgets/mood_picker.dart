@@ -55,16 +55,16 @@ class _S extends ConsumerState<MoodPickerSheet> {
         ]),
         const SizedBox(height: 12),
         // Custom text
-        TextField(_customCtrl, decoration: const InputDecoration(hintText: 'Set a custom status...', prefixIcon: Icon(Icons.edit_rounded, size: 18)), onChanged: (_) => setState(() {})),
+        TextField(controller: _customCtrl, decoration: const InputDecoration(hintText: 'Set a custom status...', prefixIcon: Icon(Icons.edit_rounded, size: 18)), onChanged: (_) => setState(() {})),
         const SizedBox(height: 14),
         const Align(alignment: Alignment.centerLeft, child: Text('Quick Select', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.grey))),
         const SizedBox(height: 8),
-        Wrap(spacing: 8, runSpacing: 8, children: _moods.map(((type, icon, label, color)) => GestureDetector(
+        Wrap(spacing: 8, runSpacing: 8, children: _moods.map((e) { final type = e.$1; final icon = e.$2; final label = e.$3; final color = e.$4; return GestureDetector(
           onTap: () => setState(() => _selected = type),
           child: AnimatedContainer(duration: const Duration(milliseconds: 150), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(color: _selected == type ? color.withOpacity(0.15) : (dark ? AppTheme.dInput : AppTheme.lInput), borderRadius: BorderRadius.circular(20), border: Border.all(color: _selected == type ? color : Colors.transparent, width: 1.5)),
             child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 16, color: color), const SizedBox(width: 5), Text(label.split(' ').sublist(1).join(' '), style: TextStyle(fontSize: 13, color: _selected == type ? color : null))])),
-        )).toList()),
+        ); }).toList()),
         const SizedBox(height: 16),
         SizedBox(width: double.infinity, child: ElevatedButton(
           onPressed: _saving ? null : () => _save(_selected, _customCtrl.text.trim().isEmpty ? null : _customCtrl.text.trim()),

@@ -144,7 +144,7 @@ class _S extends ConsumerState<ReelDetailScreen> {
                   child: Row(children: [
                     AppAvatar(url: me?.avatarUrl, size: 32, username: me?.username),
                     const SizedBox(width: 8),
-                    Expanded(child: TextField(_commentCtrl, decoration: const InputDecoration(hintText: 'Add a comment...', border: InputBorder.none, filled: false))),
+                    Expanded(child: TextField(controller: _commentCtrl, decoration: const InputDecoration(hintText: 'Add a comment...', border: InputBorder.none, filled: false))),
                     TextButton(onPressed: _sendingComment ? null : () => _comment(_commentCtrl.text), child: const Text('Post', style: TextStyle(color: AppTheme.orange, fontWeight: FontWeight.w700))),
                   ])),
               ]),

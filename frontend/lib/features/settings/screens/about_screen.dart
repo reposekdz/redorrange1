@@ -31,8 +31,7 @@ class AboutScreen extends StatelessWidget {
         const Divider(height: 20),
         _L('Open Source Licenses',    Icons.code_rounded,               () {}),
         const SizedBox(height: 20),
-        const Center(child: Text('Made with ❤️ for everyone
-© 2025 RedOrrange Inc.', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 12, height: 1.6))),
+        const Center(child: Text('Made with ❤️ for everyone\n© 2025 RedOrrange Inc.', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 12, height: 1.6))),
         const SizedBox(height: 30),
       ]),
     );

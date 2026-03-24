@@ -33,7 +33,7 @@ class _S extends ConsumerState<AdsTopupScreen> {
   Future<void> _proceed() async {
     final amt = double.tryParse(_amountCtrl.text) ?? 0;
     if (amt < 5) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Minimum top-up is $5.00')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Minimum top-up is \$5.00')));
       return;
     }
     if (_accountId == null) return;

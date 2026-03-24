@@ -88,7 +88,7 @@ class _CS extends ConsumerState<CallScreen> {
     _local?.getTracks().forEach((t) => _pc!.addTrack(t, _local!));
     _pc!.onTrack = (e) { if (e.streams.isNotEmpty && mounted) setState(() { _remote = e.streams[0]; _remoteR.srcObject = _remote; }); };
     _pc!.onIceCandidate = (c) {
-      if (c.candidate != null) ref.read(socketServiceProvider).sendIceCandidate(targetUserId: _uid, candidate: {'candidate': c.candidate, 'sdpMid': c.sdpMid, 'sdpMLineIndex': c.sdpMLineIndex});
+      if (c.candidate != null) ref.read(socketServiceProvider).sendIceCandidate(targetUserId: _uid, candidate: {'candidate': c.candidate, 'sdpMid': c.sdpMid, 'sdpMLineIndex': c.sdpMLineIndex}, callId: _callId);
     };
     _pc!.onIceConnectionState = (s) {
       if (s == RTCIceConnectionState.RTCIceConnectionStateConnected && mounted) { setState(() => _status = 'ongoing'); _startDur(); }
@@ -151,8 +151,8 @@ class _CS extends ConsumerState<CallScreen> {
     if (mounted) context.pop();
   }
 
-  void _toggleMute()  { setState(() => _muted = !_muted); _local?.getAudioTracks().forEach((t) => t.enabled = !_muted); ref.read(socketServiceProvider).toggleCallAudio(_callId, !_muted); }
-  void _toggleVideo() { setState(() => _videoOn = !_videoOn); _local?.getVideoTracks().forEach((t) => t.enabled = _videoOn); ref.read(socketServiceProvider).toggleCallVideo(_callId, _videoOn); }
+  void _toggleMute()  { setState(() => _muted = !_muted); _local?.getAudioTracks().forEach((t) => t.enabled = !_muted); }
+  void _toggleVideo() { setState(() => _videoOn = !_videoOn); _local?.getVideoTracks().forEach((t) => t.enabled = _videoOn); }
   Future<void> _flipCam() async { setState(() => _frontCam = !_frontCam); for (final t in _local?.getVideoTracks() ?? []) await Helper.switchCamera(t); }
   void _toggleSpeaker() { setState(() => _speakerOn = !_speakerOn); }
 
@@ -203,7 +203,7 @@ class _CS extends ConsumerState<CallScreen> {
 
       // End/Reject overlay
       if (['ended','rejected','unavailable','missed'].contains(_status))
-        Positioned.fill(child: Container(color: Colors.black70, child: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Positioned.fill(child: Container(color: Colors.black.withOpacity(0.7), child: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           const Icon(Icons.call_end_rounded, color: Colors.red, size: 64),
           const SizedBox(height: 16),
           Text(_endLabel(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 22)),

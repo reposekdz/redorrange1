@@ -29,6 +29,12 @@ class _S extends ConsumerState<MarketplaceDetailScreen> {
     await ref.read(apiServiceProvider).post('/marketplace/${widget.itemId}/save');
     _load();
   }
+  void _openChat() {
+    if (_item == null) return;
+    final seller = _item!['seller'] as Map<String,dynamic>? ?? {};
+    context.push('/new-chat', extra: {'userId': seller['id'], 'name': seller['name']});
+  }
+
   Future<void> _buyNow() async {
     if (_item == null) return;
     final item = _item!;

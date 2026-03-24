@@ -156,7 +156,7 @@ class _S extends ConsumerState<MessagesScreen> with SingleTickerProviderStateMix
           if (totalUnread > 0) Container(margin: const EdgeInsets.only(left: 8), padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: AppTheme.orange, borderRadius: BorderRadius.circular(10)), child: Text('$totalUnread', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700))),
         ]),
         actions: [
-          IconButton(icon: const Icon(Icons.edit_square_rounded), onPressed: () => context.push('/new-chat'), tooltip: 'New Message'),
+          IconButton(icon: const Icon(Icons.edit_rounded), onPressed: () => context.push('/new-chat'), tooltip: 'New Message'),
           IconButton(icon: const Icon(Icons.group_add_rounded), onPressed: () => context.push('/new-group'), tooltip: 'New Group'),
           PopupMenuButton<String>(
             onSelected: (v) {
@@ -233,7 +233,7 @@ class _ConvList extends StatelessWidget {
   @override Widget build(BuildContext context) {
     if (loading) return _Skel();
     if (convs.isEmpty) return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(emptyIcon, size: 72, color: Colors.grey), const SizedBox(height: 16), Text(emptyText, style: const TextStyle(fontSize: 17, color: Colors.grey, fontWeight: FontWeight.w600)), const SizedBox(height: 12), ElevatedButton(onPressed: emptyAction, child: Text(emptyBtn))]));
-    return RefreshIndicator(color: AppTheme.orange, onRefresh: () async {}, child: Column(children: [const ChatAdBanner(), Expanded(child: ListView.builder(itemCount: convs.length, itemBuilder: (_, i) => _ConvTile(conv: convs[i], onRemove: () => onRemove(convs[i].id))));
+    return RefreshIndicator(color: AppTheme.orange, onRefresh: () async {}, child: Column(children: [const ChatAdBanner(), Expanded(child: ListView.builder(itemCount: convs.length, itemBuilder: (_, i) => _ConvTile(conv: convs[i], onRemove: () => onRemove(convs[i].id))))]));
   }
 }
 

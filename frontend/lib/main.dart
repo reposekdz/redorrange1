@@ -66,7 +66,7 @@ class _S extends ConsumerState<RedOrrangeApp> {
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
-    final router    = ref.watch(routerProvider);
+    final router    = ref.watch(appRouterProvider);
     return MaterialApp.router(
       title: 'RedOrrange',
       debugShowCheckedModeBanner: false,
