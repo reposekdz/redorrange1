@@ -36,3 +36,10 @@ externalPort = 80
 [[ports]]
 localPort = 7654
 externalPort = 3001
+
+[userenv]
+
+[userenv.shared]
+PORT = "5000"
+NODE_ENV = "development"
+JWT_SECRET = "redorrange_dev_secret_key_2024"
