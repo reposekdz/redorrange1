@@ -5,8 +5,7 @@ const { authenticate } = require('../middleware/auth');
 const db      = require('../config/database');
 const rec     = require('../services/recommendationEngine');
 
-// GET /api/discover/explore — full discover page
-r.get('/explore', authenticate, async (req, res) => {
+async function exploreHandler(req, res) {
   try {
     const uid = req.userId;
     const [posts, reels, hashtags, suggested_users, events, trending] = await Promise.all([
@@ -43,9 +42,11 @@ r.get('/explore', authenticate, async (req, res) => {
     suggested_users.forEach(u => { u.is_verified = !!u.is_verified; });
     res.json({ success: true, posts, reels, trending_hashtags: hashtags, suggested_users, upcoming_events: events, trending_posts: trending });
   } catch (e) { console.error('[explore]', e.message); res.status(500).json({ success: false, message: e.message }); }
-});
+}
 
-// GET /api/discover/trending — trending posts only
+r.get('/',        authenticate, exploreHandler);
+r.get('/explore', authenticate, exploreHandler);
+
 r.get('/trending', authenticate, async (req, res) => {
   try {
     const { limit = 30 } = req.query;
@@ -54,7 +55,6 @@ r.get('/trending', authenticate, async (req, res) => {
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
-// GET /api/discover/suggested-users
 r.get('/suggested-users', authenticate, async (req, res) => {
   try {
     const users = await rec.getSuggestedUsers(req.userId, 20);
@@ -62,7 +62,6 @@ r.get('/suggested-users', authenticate, async (req, res) => {
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
-// GET /api/discover/trending-hashtags
 r.get('/trending-hashtags', authenticate, async (req, res) => {
   try {
     const hashtags = await rec.getTrendingHashtags(25);
@@ -70,7 +69,6 @@ r.get('/trending-hashtags', authenticate, async (req, res) => {
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
-// GET /api/discover/similar/:postId
 r.get('/similar/:postId', authenticate, async (req, res) => {
   try {
     const posts = await rec.getSimilarPosts(req.params.postId, req.userId, 8);

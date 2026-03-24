@@ -17,8 +17,6 @@ r.post('/:id/boost',                   authenticate, c.boostPost);
 r.get('/:id/comments',                 optionalAuth, c.getComments);
 r.post('/:id/comments',                authenticate, c.addComment);
 
-
-// Comment operations
 r.delete('/:id/comments/:commentId', authenticate, async (req, res) => {
   try {
     const comment = await db.queryOne('SELECT id FROM comments WHERE id=? AND (user_id=? OR (SELECT user_id FROM posts WHERE id=?)=?)', [req.params.commentId, req.userId, req.params.id, req.userId]);
@@ -38,7 +36,6 @@ r.post('/:id/comments/:commentId/like', authenticate, async (req, res) => {
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
-// Reactions
 r.get('/:id/reactions', authenticate, async (req, res) => {
   try {
     const reactions = await db.query(`SELECT r.reaction_type, u.id, u.username, u.display_name, u.avatar_url, u.is_verified FROM likes r JOIN users u ON r.user_id=u.id WHERE r.target_type='post' AND r.target_id=? ORDER BY r.created_at DESC LIMIT 100`, [req.params.id]);
@@ -46,22 +43,18 @@ r.get('/:id/reactions', authenticate, async (req, res) => {
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
-// View tracking
 r.post('/:id/view', async (req, res) => {
   await db.query('UPDATE posts SET views_count=views_count+1 WHERE id=?', [req.params.id]).catch(()=>{});
   res.json({ success: true });
 });
 
-module.exports = r;
-
-// GET /api/posts/:id/insights
 r.get('/:id/insights', authenticate, async (req, res) => {
   try {
     const post = await db.queryOne('SELECT * FROM posts WHERE id=? AND user_id=?', [req.params.id, req.userId]);
     if (!post) return res.status(404).json({ success: false, message: 'Not found or not your post' });
     const [likes, comments, shares, saves, followers] = await Promise.all([
-      db.queryOne('SELECT COUNT(*) AS c FROM likes WHERE target_type="post" AND target_id=?', [req.params.id]),
-      db.queryOne('SELECT COUNT(*) AS c FROM comments WHERE target_type="post" AND target_id=? AND is_deleted=FALSE', [req.params.id]),
+      db.queryOne("SELECT COUNT(*) AS c FROM likes WHERE target_type='post' AND target_id=?", [req.params.id]),
+      db.queryOne("SELECT COUNT(*) AS c FROM comments WHERE target_type='post' AND target_id=? AND is_deleted=FALSE", [req.params.id]),
       db.queryOne('SELECT COUNT(*) AS c FROM shares WHERE post_id=?', [req.params.id]),
       db.queryOne('SELECT COUNT(*) AS c FROM saved_posts WHERE post_id=?', [req.params.id]),
       db.queryOne('SELECT followers_count FROM users WHERE id=?', [req.userId]),
@@ -73,3 +66,5 @@ r.get('/:id/insights', authenticate, async (req, res) => {
     res.json({ success: true, views_count: viewCount, reach: Math.round(viewCount * 1.2), likes_count: likeCount, comments_count: comments?.c || 0, shares_count: shares?.c || 0, saves_count: saves?.c || 0, engagement_rate: engagement, followers_pct: followersPct });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
+
+module.exports = r;

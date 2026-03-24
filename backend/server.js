@@ -53,8 +53,9 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'", 'https:', 'data:', 'blob:'],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://www.gstatic.com', 'https://cdn.jsdelivr.net'],
-      scriptSrcElem: ["'self'", "'unsafe-inline'", 'https://www.gstatic.com', 'https://cdn.jsdelivr.net'],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://www.gstatic.com', 'https://cdn.jsdelivr.net', 'https://js.stripe.com'],
+      scriptSrcElem: ["'self'", "'unsafe-inline'", 'https://www.gstatic.com', 'https://cdn.jsdelivr.net', 'https://js.stripe.com'],
+      frameSrc: ["'self'", 'https://js.stripe.com', 'https://hooks.stripe.com'],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
       imgSrc: ["'self'", 'https:', 'data:', 'blob:'],
@@ -166,8 +167,13 @@ cron.schedule('*/5 * * * *', async () => {
   } catch (e) { console.error('[Cron] Scheduled msgs error:', e.message); }
 });
 
-// ── 404
-app.use('*', (_, res) => res.status(404).json({ success: false, message: 'Route not found' }));
+// ── Flutter client-side routing fallback (must be after all API routes)
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ success: false, message: 'Route not found' });
+  }
+  res.sendFile(path.join(flutterWebDir, 'index.html'));
+});
 
 // ── Error handler
 app.use((err, req, res, _) => {

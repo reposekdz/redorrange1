@@ -33,34 +33,36 @@ async function getRankedFeed(userId, page = 1, limit = 15) {
   const viewedPlaceholders    = viewedIds.length > 0    ? viewedIds.map(() => '?').join(',')    : 'NULL';
 
   const candidates = await db.query(`
-    SELECT
-      p.id, p.user_id, p.caption, p.created_at, p.type, p.location,
-      p.likes_count, p.comments_count, p.shares_count, p.views_count,
-      p.is_public, p.allow_comments,
-      u.username, u.display_name, u.avatar_url, u.is_verified,
-      (SELECT COUNT(*) > 0 FROM likes WHERE target_type='post' AND target_id=p.id AND user_id=?) AS is_liked,
-      (SELECT COUNT(*) > 0 FROM saved_posts WHERE post_id=p.id AND user_id=?) AS is_saved,
-      (SELECT media_url FROM post_media WHERE post_id=p.id ORDER BY order_index ASC LIMIT 1) AS thumbnail,
-      (SELECT json_agg(json_build_object('media_url',pm.media_url,'media_type',pm.media_type,'order_index',pm.order_index) ORDER BY pm.order_index) FROM post_media pm WHERE pm.post_id=p.id) AS media,
-      CASE WHEN p.user_id IN (${followingPlaceholders}) THEN 3 ELSE 0 END AS rel_score,
-      1.0 / (1.0 + EXTRACT(EPOCH FROM (NOW() - p.created_at))/3600.0 * 0.1) AS recency_score,
-      CASE WHEN p.views_count > 0 THEN
-        (p.likes_count + p.comments_count * 2 + p.shares_count * 3)::float / p.views_count
-      ELSE 0 END AS engagement_rate
-    FROM posts p
-    JOIN users u ON p.user_id = u.id
-    WHERE p.is_deleted = FALSE
-      AND p.type NOT IN ('reel','story')
-      AND p.id NOT IN (${viewedPlaceholders})
-      AND p.user_id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id=?)
-      AND (
-        p.user_id IN (${followingPlaceholders})
-        OR (p.is_public = TRUE AND p.created_at > NOW() - INTERVAL '7 days')
-      )
+    SELECT * FROM (
+      SELECT
+        p.id, p.user_id, p.caption, p.created_at, p.type, p.location,
+        p.likes_count, p.comments_count, p.shares_count, p.views_count,
+        p.is_public, p.allow_comments,
+        u.username, u.display_name, u.avatar_url, u.is_verified,
+        (SELECT COUNT(*) > 0 FROM likes WHERE target_type='post' AND target_id=p.id AND user_id=?) AS is_liked,
+        (SELECT COUNT(*) > 0 FROM saved_posts WHERE post_id=p.id AND user_id=?) AS is_saved,
+        (SELECT media_url FROM post_media WHERE post_id=p.id ORDER BY order_index ASC LIMIT 1) AS thumbnail,
+        (SELECT json_agg(json_build_object('media_url',pm.media_url,'media_type',pm.media_type,'order_index',pm.order_index) ORDER BY pm.order_index) FROM post_media pm WHERE pm.post_id=p.id) AS media,
+        CASE WHEN p.user_id IN (${followingPlaceholders}) THEN 3 ELSE 0 END AS rel_score,
+        1.0 / (1.0 + EXTRACT(EPOCH FROM (NOW() - p.created_at))/3600.0 * 0.1) AS recency_score,
+        CASE WHEN p.views_count > 0 THEN
+          (p.likes_count + p.comments_count * 2 + p.shares_count * 3)::float / p.views_count
+        ELSE 0 END AS engagement_rate
+      FROM posts p
+      JOIN users u ON p.user_id = u.id
+      WHERE p.is_deleted = FALSE
+        AND p.type NOT IN ('reel','story')
+        AND p.id NOT IN (${viewedPlaceholders})
+        AND p.user_id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id=?)
+        AND (
+          p.user_id IN (${followingPlaceholders})
+          OR (p.is_public = TRUE AND p.created_at > NOW() - INTERVAL '7 days')
+        )
+    ) scored
     ORDER BY
       (rel_score * 0.25) + (recency_score * 0.25) + (engagement_rate * 0.35) +
-      (CASE WHEN u.is_verified THEN 0.1 ELSE 0 END) DESC,
-      p.created_at DESC
+      (CASE WHEN is_verified THEN 0.1 ELSE 0 END) DESC,
+      created_at DESC
     LIMIT ? OFFSET ?
   `, [
     userId, userId,
@@ -133,24 +135,26 @@ async function getTrending(userId, limit = 30) {
 // ─────────────────────────────────────────────────────
 async function getSuggestedUsers(userId, limit = 10) {
   const suggested = await db.query(`
-    SELECT
-      u.id, u.username, u.display_name, u.avatar_url, u.bio, u.is_verified,
-      u.followers_count,
-      (SELECT COUNT(*) FROM follows f1
-        JOIN follows f2 ON f1.following_id=f2.following_id
-        WHERE f1.follower_id=? AND f2.follower_id=u.id AND f1.status='accepted' AND f2.status='accepted'
-      ) AS mutual_follows,
-      (SELECT COUNT(*) > 0 FROM follows WHERE follower_id=? AND following_id=u.id) AS is_following
-    FROM users u
-    WHERE u.id != ?
-      AND u.username IS NOT NULL
-      AND u.id NOT IN (SELECT following_id FROM follows WHERE follower_id=? AND status='accepted')
-      AND u.id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id=?)
-      AND u.id NOT IN (SELECT user_id FROM blocks WHERE blocked_id=?)
+    SELECT * FROM (
+      SELECT
+        u.id, u.username, u.display_name, u.avatar_url, u.bio, u.is_verified,
+        u.followers_count,
+        (SELECT COUNT(*) FROM follows f1
+          JOIN follows f2 ON f1.following_id=f2.following_id
+          WHERE f1.follower_id=? AND f2.follower_id=u.id AND f1.status='accepted' AND f2.status='accepted'
+        ) AS mutual_follows,
+        (SELECT COUNT(*) > 0 FROM follows WHERE follower_id=? AND following_id=u.id) AS is_following
+      FROM users u
+      WHERE u.id != ?
+        AND u.username IS NOT NULL
+        AND u.id NOT IN (SELECT following_id FROM follows WHERE follower_id=? AND status='accepted')
+        AND u.id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id=?)
+        AND u.id NOT IN (SELECT user_id FROM blocks WHERE blocked_id=?)
+    ) ranked
     ORDER BY
       mutual_follows * 3 DESC,
-      u.followers_count * 0.01 DESC,
-      u.is_verified DESC
+      followers_count * 0.01 DESC,
+      is_verified DESC
     LIMIT ?
   `, [userId, userId, userId, userId, userId, userId, limit * 2]);
 
