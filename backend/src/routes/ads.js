@@ -153,10 +153,10 @@ r.get('/campaigns/:id/analytics', authenticate, async (req, res) => {
     const { period = '7d' } = req.query;
     const days = period === '30d' ? 30 : period === '90d' ? 90 : 7;
     const [daily, totals, topAds, hourly] = await Promise.all([
-      db.query('SELECT * FROM ad_daily_stats WHERE campaign_id=? AND stat_date >= DATE_SUB(CURRENT_DATE,INTERVAL '? day') ORDER BY stat_date', [req.params.id, days]),
-      db.queryOne('SELECT SUM(impressions) AS impressions, SUM(clicks) AS clicks, SUM(spend) AS spend, SUM(reach) AS reach, SUM(conversions) AS conversions, SUM(video_views) AS video_views FROM ad_daily_stats WHERE campaign_id=? AND stat_date >= DATE_SUB(CURRENT_DATE,INTERVAL '? day')', [req.params.id, days]),
-      db.query('SELECT a.id, a.name, a.format, SUM(s.impressions) AS impressions, SUM(s.clicks) AS clicks, SUM(s.spend) AS spend FROM ad_daily_stats s JOIN ads a ON s.ad_id=a.id WHERE s.campaign_id=? AND s.stat_date >= DATE_SUB(CURRENT_DATE,INTERVAL '? day') GROUP BY a.id ORDER BY clicks DESC LIMIT 5', [req.params.id, days]),
-      db.query('SELECT HOUR(created_at) AS hour, COUNT(*) AS clicks FROM ad_clicks WHERE campaign_id=? AND created_at >= DATE_SUB(NOW(), INTERVAL '? day') GROUP BY hour ORDER BY hour', [req.params.id, days]),
+      db.query("SELECT * FROM ad_daily_stats WHERE campaign_id=? AND stat_date >= CURRENT_DATE - (? * INTERVAL '1 day') ORDER BY stat_date", [req.params.id, days]),
+      db.queryOne("SELECT SUM(impressions) AS impressions, SUM(clicks) AS clicks, SUM(spend) AS spend, SUM(reach) AS reach, SUM(conversions) AS conversions, SUM(video_views) AS video_views FROM ad_daily_stats WHERE campaign_id=? AND stat_date >= CURRENT_DATE - (? * INTERVAL '1 day')", [req.params.id, days]),
+      db.query("SELECT a.id, a.name, a.format, SUM(s.impressions) AS impressions, SUM(s.clicks) AS clicks, SUM(s.spend) AS spend FROM ad_daily_stats s JOIN ads a ON s.ad_id=a.id WHERE s.campaign_id=? AND s.stat_date >= CURRENT_DATE - (? * INTERVAL '1 day') GROUP BY a.id ORDER BY clicks DESC LIMIT 5", [req.params.id, days]),
+      db.query("SELECT EXTRACT(HOUR FROM created_at) AS hour, COUNT(*) AS clicks FROM ad_clicks WHERE campaign_id=? AND created_at >= NOW() - (? * INTERVAL '1 day') GROUP BY hour ORDER BY hour", [req.params.id, days]),
     ]);
     const ctr  = totals?.impressions > 0 ? (totals.clicks / totals.impressions * 100).toFixed(2) : '0.00';
     const cpm  = totals?.impressions > 0 ? (totals.spend / totals.impressions * 1000).toFixed(2) : '0.00';
@@ -275,7 +275,7 @@ r.get('/serve/:placement', async (req, res) => {
       db.query('UPDATE ad_campaigns SET impressions_total=impressions_total+1, spent_amount=spent_amount+? WHERE id=?', [cost, ad.campaign_id]).catch(()=>{});
       db.query('UPDATE ad_accounts SET total_spent=total_spent+? WHERE id=?', [cost, ad.account_id]).catch(()=>{});
       // Upsert daily stats
-      db.query(`INSERT INTO ad_daily_stats (id, ad_id, campaign_id, account_id, stat_date, impressions, spend) VALUES (UUID(),?,?,?,CURRENT_DATE,1,?) 
+      db.query(`INSERT INTO ad_daily_stats (id, ad_id, campaign_id, account_id, stat_date, impressions, spend) VALUES (gen_random_uuid(),?,?,?,CURRENT_DATE,1,?) ON CONFLICT (ad_id, stat_date) DO UPDATE SET impressions=ad_daily_stats.impressions+1, spend=ad_daily_stats.spend+EXCLUDED.spend`,
         [ad.id, ad.campaign_id, ad.account_id, cost, cost]).catch(()=>{});
     }
 
@@ -294,7 +294,7 @@ r.post('/click/:adId', async (req, res) => {
       [req.params.adId, ad.campaign_id, user_id||null, placement||null, click_type, cost, req.ip, req.headers['user-agent']?.substring(0,500)||null]).catch(()=>{});
     db.query('UPDATE ads SET clicks=clicks+1, cost_per_click=(spend+?)/(clicks+1) WHERE id=?', [cost, req.params.adId]).catch(()=>{});
     db.query('UPDATE ad_campaigns SET clicks_total=clicks_total+1, spent_amount=spent_amount+? WHERE id=?', [cost, ad.campaign_id]).catch(()=>{});
-    db.query(`INSERT INTO ad_daily_stats (id, ad_id, campaign_id, account_id, stat_date, clicks, spend) VALUES (UUID(),?,?,?,CURRENT_DATE,1,?) 
+    db.query(`INSERT INTO ad_daily_stats (id, ad_id, campaign_id, account_id, stat_date, clicks, spend) VALUES (gen_random_uuid(),?,?,?,CURRENT_DATE,1,?) ON CONFLICT (ad_id, stat_date) DO UPDATE SET clicks=ad_daily_stats.clicks+1, spend=ad_daily_stats.spend+EXCLUDED.spend`,
       [req.params.adId, ad.campaign_id, ad.account_id, cost, cost]).catch(()=>{});
     res.json({ success: true });
   } catch (e) { res.json({ success: false }); }

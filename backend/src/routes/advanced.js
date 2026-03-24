@@ -224,7 +224,7 @@ r.post('/link-preview', authenticate, async (req, res) => {
     const { url } = req.body;
     if (!url) return res.json({ success: false });
     // Check cache
-    const cached = await db.queryOne('SELECT * FROM link_previews WHERE url=? AND created_at > NOW() - INTERVAL '24 hour'', [url]);
+    const cached = await db.queryOne("SELECT * FROM link_previews WHERE url=? AND created_at > NOW() - INTERVAL '24 hours'", [url]);
     if (cached) return res.json({ success: true, preview: cached });
 
     // Fetch metadata (simple approach)
@@ -237,7 +237,9 @@ r.post('/link-preview', authenticate, async (req, res) => {
     const siteM  = html.match(/<meta property="og:site_name" content="([^"]+)"/i);
 
     const preview = { url, title: titleM?.[1] || '', description: descM?.[1] || '', image: imgM?.[1] || null, site_name: siteM?.[1] || new URL(url).hostname };
-    await db.query('INSERT INTO link_previews (url, title, description, image_url, site_name) VALUES (?,?,?,?,?) 
+    await db.query(
+      'INSERT INTO link_previews (url, title, description, image_url, site_name) VALUES (?,?,?,?,?) ON CONFLICT (url) DO UPDATE SET title=EXCLUDED.title, description=EXCLUDED.description, image_url=EXCLUDED.image_url, site_name=EXCLUDED.site_name',
+      [preview.url, preview.title, preview.description, preview.image, preview.site_name]).catch(()=>{});
     res.json({ success: true, preview });
   } catch (e) { res.json({ success: false, preview: null }); }
 });
@@ -249,7 +251,8 @@ r.post('/users/status', authenticate, async (req, res) => {
     const expiresAt = new Date(Date.now() + expires_in_hours * 3600000);
     await db.query('UPDATE users SET status_text=? WHERE id=?', [status_text || null, req.userId]);
     if (mood) {
-      await db.query('INSERT INTO user_moods (user_id, mood, text, expires_at) VALUES (?,?,?,?) 
+      await db.query(
+        'INSERT INTO user_moods (user_id, mood, text, expires_at) VALUES (?,?,?,?) ON CONFLICT (user_id) DO UPDATE SET mood=?, text=?, expires_at=?',
         [req.userId, mood, status_text || null, expiresAt, mood, status_text || null, expiresAt]);
     }
     res.json({ success: true });

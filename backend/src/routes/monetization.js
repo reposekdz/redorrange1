@@ -85,7 +85,7 @@ r.post('/subscribe/stripe', authenticate, async (req, res) => {
     });
     const subId = uuidv4();
     await db.query(
-      'INSERT INTO user_subscriptions (id,user_id,plan_id,status,provider,provider_subscription_id,current_period_start,current_period_end) VALUES (?,?,?,?,?,?,NOW(),NOW() + INTERVAL '30 day')',
+      `INSERT INTO user_subscriptions (id,user_id,plan_id,status,provider,provider_subscription_id,current_period_start,current_period_end) VALUES (?,?,?,?,?,?,NOW(),NOW() + INTERVAL '30 days')`,
       [subId, req.userId, plan_id, 'incomplete', 'stripe', sub.subscription_id]
     );
     res.json({ success: true, subscription_id: subId, stripe_sub_id: sub.subscription_id, client_secret: sub.client_secret, status: sub.status });
@@ -124,7 +124,7 @@ r.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (req
       }
       case 'invoice.paid': {
         const inv = event.data.object;
-        await db.query("UPDATE user_subscriptions SET status='active', current_period_start=FROM_UNIXTIME(?), current_period_end=FROM_UNIXTIME(?) WHERE provider_subscription_id=?",
+        await db.query("UPDATE user_subscriptions SET status='active', current_period_start=to_timestamp(?), current_period_end=to_timestamp(?) WHERE provider_subscription_id=?",
           [inv.period_start, inv.period_end, inv.subscription]);
         break;
       }
