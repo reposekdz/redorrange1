@@ -1,0 +1,64 @@
+
+╔══════════════════════════════════════╗
+║  🔴 RedOrrange API v2.0  :5000    ║
+║  🛠️  Development Mode              ║
+╚══════════════════════════════════════╝
+[DB] ✅ Connected
+[0mGET / [32m200[0m 4.546 ms - -[0m
+[0mGET /flutter_bootstrap.js [32m200[0m 2.146 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.js [32m200[0m 1.431 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.wasm [32m200[0m 2.158 ms - -[0m
+[0mGET /main.dart.js [32m200[0m 0.821 ms - -[0m
+[0mGET / [32m200[0m 0.715 ms - -[0m
+[0mGET /flutter_bootstrap.js [32m200[0m 2.266 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.js [32m200[0m 1.575 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.wasm [32m200[0m 1.674 ms - -[0m
+[0mGET /main.dart.js [32m200[0m 0.920 ms - -[0m
+[0mGET /assets/FontManifest.json [32m200[0m 1.209 ms - 333[0m
+[0mGET /assets/packages/cupertino_icons/assets/CupertinoIcons.ttf [32m200[0m 3.869 ms - -[0m
+[0mGET /assets/fonts/MaterialIcons-Regular.otf [32m200[0m 5.555 ms - -[0m
+[0mGET /assets/packages/iconsax_flutter/fonts/FlutterIconsax.ttf [32m200[0m 3.548 ms - -[0m
+[0mGET /favicon.ico [33m404[0m 4.862 ms - 45[0m
+[0mGET /assets/packages/wakelock_plus/assets/no_sleep.js [32m200[0m 0.910 ms - -[0m
+[0mGET /assets/FontManifest.json [32m200[0m 0.713 ms - 333[0m
+[0mGET /assets/fonts/MaterialIcons-Regular.otf [32m200[0m 0.809 ms - -[0m
+[0mGET /assets/packages/cupertino_icons/assets/CupertinoIcons.ttf [32m200[0m 0.522 ms - -[0m
+[0mGET /assets/packages/iconsax_flutter/fonts/FlutterIconsax.ttf [32m200[0m 0.763 ms - -[0m
+[0mGET /assets/packages/wakelock_plus/assets/no_sleep.js [32m200[0m 2.022 ms - -[0m
+[0mGET / [32m200[0m 0.758 ms - -[0m
+[0mGET /flutter_bootstrap.js [32m200[0m 0.982 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.js [32m200[0m 1.547 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.wasm [32m200[0m 1.786 ms - -[0m
+[0mGET /main.dart.js [32m200[0m 0.996 ms - -[0m
+[0mGET /assets/FontManifest.json [32m200[0m 0.588 ms - 333[0m
+[0mGET /favicon.ico [33m404[0m 1.336 ms - 45[0m
+[0mGET /assets/packages/cupertino_icons/assets/CupertinoIcons.ttf [32m200[0m 2.322 ms - -[0m
+[0mGET /assets/packages/iconsax_flutter/fonts/FlutterIconsax.ttf [32m200[0m 1.491 ms - -[0m
+[0mGET /assets/fonts/MaterialIcons-Regular.otf [32m200[0m 2.653 ms - -[0m
+[0mGET /assets/packages/wakelock_plus/assets/no_sleep.js [32m200[0m 0.670 ms - -[0m
+[0mGET / [36m304[0m 1.465 ms - -[0m
+[0mGET /flutter_bootstrap.js [32m200[0m 1.122 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.wasm [36m304[0m 0.818 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.js [36m304[0m 0.355 ms - -[0m
+[0mGET /main.dart.js [32m200[0m 0.587 ms - -[0m
+[0mGET /assets/FontManifest.json [36m304[0m 0.703 ms - -[0m
+[0mGET /assets/fonts/MaterialIcons-Regular.otf [36m304[0m 1.122 ms - -[0m
+[0mGET /assets/packages/cupertino_icons/assets/CupertinoIcons.ttf [36m304[0m 1.107 ms - -[0m
+[0mGET /assets/packages/iconsax_flutter/fonts/FlutterIconsax.ttf [36m304[0m 1.179 ms - -[0m
+[0mGET /assets/packages/wakelock_plus/assets/no_sleep.js [36m304[0m 0.473 ms - -[0m
+[0mGET / [32m200[0m 0.692 ms - -[0m
+[0mGET /flutter_bootstrap.js [32m200[0m 0.873 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.js [32m200[0m 1.821 ms - -[0m
+[0mGET /main.dart.js [32m200[0m 1.007 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.wasm [32m200[0m 2.146 ms - -[0m
+[0mGET /assets/FontManifest.json [32m200[0m 0.691 ms - 333[0m
+[0mGET /favicon.ico [33m404[0m 1.080 ms - 45[0m
+[0mGET /assets/packages/cupertino_icons/assets/CupertinoIcons.ttf [32m200[0m 1.725 ms - -[0m
+[0mGET /assets/packages/iconsax_flutter/fonts/FlutterIconsax.ttf [32m200[0m 1.901 ms - -[0m
+[0mGET /assets/fonts/MaterialIcons-Regular.otf [32m200[0m 2.016 ms - -[0m
+[0mGET /assets/packages/wakelock_plus/assets/no_sleep.js [32m200[0m 0.515 ms - -[0m
+[0mGET /assets/AssetManifest.bin.json [32m200[0m 0.658 ms - -[0m
+[0mGET /assets/packages/country_code_picker/flags/us.png [32m200[0m 0.513 ms - 1384[0m
+[0mGET /api/notifications/unread-count [33m401[0m 1.228 ms - 38[0m
+[0mGET /api/users/me [33m401[0m 1.297 ms - 38[0m
+[Cron] Cleanup done

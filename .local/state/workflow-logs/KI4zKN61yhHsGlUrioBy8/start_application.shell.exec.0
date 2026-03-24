@@ -1,0 +1,32 @@
+
+╔══════════════════════════════════════╗
+║  🔴 RedOrrange API v2.0  :5000    ║
+║  🛠️  Development Mode              ║
+╚══════════════════════════════════════╝
+[DB] ✅ Connected
+[0mGET / [36m304[0m 4.393 ms - -[0m
+[0mGET /flutter_bootstrap.js [32m200[0m 5.125 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.wasm [36m304[0m 0.679 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.js [36m304[0m 0.523 ms - -[0m
+[0mGET /main.dart.js [36m304[0m 0.630 ms - -[0m
+[0mGET /assets/FontManifest.json [36m304[0m 0.498 ms - -[0m
+[0mGET /assets/fonts/MaterialIcons-Regular.otf [36m304[0m 0.493 ms - -[0m
+[0mGET /assets/packages/cupertino_icons/assets/CupertinoIcons.ttf [36m304[0m 0.387 ms - -[0m
+[0mGET /assets/packages/iconsax_flutter/fonts/FlutterIconsax.ttf [36m304[0m 0.648 ms - -[0m
+[0mGET /assets/packages/wakelock_plus/assets/no_sleep.js [36m304[0m 0.569 ms - -[0m
+[0mGET /assets/AssetManifest.bin.json [36m304[0m 0.457 ms - -[0m
+[0mGET /api/notifications/unread-count [33m401[0m 5.925 ms - 38[0m
+[0mGET /api/users/me [33m401[0m 5.045 ms - 38[0m
+[0mGET /assets/packages/country_code_picker/flags/us.png [36m304[0m 0.532 ms - -[0m
+📱 OTP [+15559999001]: 695737
+[0mPOST /api/auth/send-otp [32m200[0m 53.246 ms - 76[0m
+[0mPOST /api/auth/verify-otp [32m200[0m 23.805 ms - 651[0m
+[0mGET /api/posts/feed [32m200[0m 32.040 ms - 77[0m
+[explore] column "user_id" does not exist
+[0mGET /api/discover [31m500[0m 21.242 ms - 63[0m
+[0mGET /api/reels/feed [31m500[0m 4.171 ms - 63[0m
+[0mGET /api/notifications [32m200[0m 14.238 ms - 83[0m
+📱 OTP [+15559888001]: 491480
+[0mPOST /api/auth/send-otp [32m200[0m 24.006 ms - 76[0m
+[0mPOST /api/auth/verify-otp [32m200[0m 20.236 ms - 651[0m
+[0mGET /api/discover/trending [32m200[0m 20.341 ms - 27[0m
