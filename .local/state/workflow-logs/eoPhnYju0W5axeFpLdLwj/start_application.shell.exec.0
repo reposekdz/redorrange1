@@ -1,0 +1,14 @@
+
+╔══════════════════════════════════════╗
+║  🔴 RedOrrange API v2.0  :5000    ║
+║  🛠️  Development Mode              ║
+╚══════════════════════════════════════╝
+[DB] ✅ Connected
+[0mGET / [32m200[0m 5.535 ms - -[0m
+[0mGET /favicon.ico [33m404[0m 3.425 ms - 45[0m
+[0mGET /health [32m200[0m 9.779 ms - 106[0m
+[0mGET /health [32m200[0m 1.254 ms - 106[0m
+[0mGET / [32m200[0m 0.740 ms - -[0m
+[0mGET / [36m304[0m 0.663 ms - -[0m
+[0mGET /app/ [32m200[0m 1.550 ms - 3142[0m
+[0mGET /health [32m200[0m 8.412 ms - 108[0m

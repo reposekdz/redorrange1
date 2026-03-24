@@ -1,0 +1,25 @@
+
+╔══════════════════════════════════════╗
+║  🔴 RedOrrange API v2.0  :5000    ║
+║  🛠️  Development Mode              ║
+╚══════════════════════════════════════╝
+[DB] ✅ Connected
+[Cron] Cleanup done
+[0mGET / [36m304[0m 2.636 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.js [32m200[0m 5.255 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.wasm [32m200[0m 6.765 ms - -[0m
+[0mGET /assets/packages/wakelock_plus/assets/no_sleep.js [32m200[0m 3.078 ms - -[0m
+[0mGET / [36m304[0m 21.836 ms - -[0m
+[0mGET /flutter_bootstrap.js [36m304[0m 0.904 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.wasm [36m304[0m 0.862 ms - -[0m
+[0mGET /canvaskit/chromium/canvaskit.js [36m304[0m 0.444 ms - -[0m
+[0mGET /main.dart.js [36m304[0m 0.522 ms - -[0m
+[0mGET /assets/FontManifest.json [36m304[0m 0.573 ms - -[0m
+[0mGET /assets/packages/cupertino_icons/assets/CupertinoIcons.ttf [32m200[0m 2.503 ms - -[0m
+[0mGET /assets/packages/iconsax_flutter/fonts/FlutterIconsax.ttf [32m200[0m 2.113 ms - -[0m
+[0mGET /assets/fonts/MaterialIcons-Regular.otf [32m200[0m 4.615 ms - -[0m
+[0mGET /assets/packages/wakelock_plus/assets/no_sleep.js [36m304[0m 0.468 ms - -[0m
+[0mGET / [36m304[0m 0.441 ms - -[0m
+[0mGET /flutter_service_worker.js?v=19134747 [36m304[0m 0.488 ms - -[0m
+[0mGET / [36m304[0m 0.366 ms - -[0m
+[0mGET /flutter_service_worker.js?v=19134747 [32m200[0m 2.199 ms - -[0m
