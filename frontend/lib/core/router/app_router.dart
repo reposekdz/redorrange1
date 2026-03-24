@@ -105,8 +105,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/auth/phone', builder: (_, __) => const PhoneScreen()),
       GoRoute(path: '/auth/otp', builder: (_, s) {
-        final e = s.extra as Map<String,dynamic>? ?? {};
-        return OtpScreen(phone: e['phone'] as String? ?? '', cc: e['cc'] as String? ?? '+1');
+        final e = s.extra as Map<String, dynamic>? ?? {};
+        return OtpScreen(
+          phone:   e['phone']    as String? ?? '',
+          cc:      e['cc']       as String? ?? '+1',
+          isNew:   e['is_new']   == true,
+          devCode: e['dev_code'] as String?,
+        );
       }),
       GoRoute(path: '/auth/qr',    builder: (_, __) => const QrScreen()),
       GoRoute(path: '/auth/setup', builder: (_, __) => const SetupScreen()),

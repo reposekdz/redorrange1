@@ -1,78 +1,427 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:async';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/providers/auth_provider.dart';
 
 class OtpScreen extends ConsumerStatefulWidget {
   final String phone, cc;
-  const OtpScreen({super.key, required this.phone, required this.cc});
-  @override ConsumerState<OtpScreen> createState() => _S();
+  final bool isNew;
+  final String? devCode;
+
+  const OtpScreen({
+    super.key,
+    required this.phone,
+    required this.cc,
+    this.isNew = false,
+    this.devCode,
+  });
+
+  @override
+  ConsumerState<OtpScreen> createState() => _OtpScreenState();
 }
-class _S extends ConsumerState<OtpScreen> {
-  final _ctrl = TextEditingController();
-  bool _l = false; String? _e; int _sec = 60; Timer? _t;
-  bool _canResend = false;
-  @override void initState() { super.initState(); _startTimer(); }
-  @override void dispose() { _ctrl.dispose(); _t?.cancel(); super.dispose(); }
-  void _startTimer() { _t?.cancel(); setState(() { _sec = 60; _canResend = false; }); _t = Timer.periodic(const Duration(seconds: 1), (t) { if (!mounted) { t.cancel(); return; } setState(() => _sec--); if (_sec == 0) { t.cancel(); setState(() => _canResend = true); } }); }
+
+class _OtpScreenState extends ConsumerState<OtpScreen>
+    with SingleTickerProviderStateMixin {
+  final _ctrl      = TextEditingController();
+  final _focusNode = FocusNode();
+
+  bool    _loading    = false;
+  bool    _canResend  = false;
+  bool    _success    = false;
+  String? _error;
+  int     _secs       = 60;
+  Timer?  _timer;
+  int     _attempts   = 0;
+
+  late final AnimationController _shakeCtrl;
+  late final Animation<double>   _shake;
+
+  @override
+  void initState() {
+    super.initState();
+    _shakeCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
+    _shake = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _shakeCtrl, curve: Curves.elasticOut));
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    _focusNode.dispose();
+    _timer?.cancel();
+    _shakeCtrl.dispose();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    setState(() { _secs = 60; _canResend = false; });
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) { t.cancel(); return; }
+      setState(() => _secs--);
+      if (_secs <= 0) { t.cancel(); setState(() => _canResend = true); }
+    });
+  }
+
   Future<void> _verify(String code) async {
     if (code.length != 6) return;
-    setState(() { _l = true; _e = null; });
+    _focusNode.unfocus();
+    setState(() { _loading = true; _error = null; });
     try {
       final r = await ref.read(authControllerProvider).verifyOtp(widget.phone, widget.cc, code);
       if (!mounted) return;
       if (r['success'] == true) {
-        if (r['is_new_user'] == true || r['user']?['needs_setup'] == true) context.go('/auth/setup');
-        else context.go('/');
-      } else { setState(() { _e = r['message'] ?? 'Incorrect code. Try again.'; }); _ctrl.clear(); }
-    } catch (e) { setState(() => _e = 'Verification failed. Check your connection.'); }
-    finally { if (mounted) setState(() => _l = false); }
+        setState(() => _success = true);
+        HapticFeedback.heavyImpact();
+        await Future.delayed(const Duration(milliseconds: 900));
+        if (!mounted) return;
+        final needsSetup = r['is_new_user'] == true || r['user']?['needs_setup'] == true;
+        if (needsSetup) {
+          context.go('/auth/setup');
+        } else {
+          context.go('/');
+        }
+      } else {
+        _attempts++;
+        setState(() => _error = r['message'] ?? 'Incorrect code. Try again.');
+        _ctrl.clear();
+        _focusNode.requestFocus();
+        HapticFeedback.mediumImpact();
+        _shakeCtrl.forward(from: 0);
+      }
+    } catch (_) {
+      setState(() => _error = 'Verification failed. Check your connection.');
+      _shakeCtrl.forward(from: 0);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
+
   Future<void> _resend() async {
-    if (!_canResend) return;
+    if (!_canResend || _loading) return;
+    setState(() { _loading = true; _error = null; _ctrl.clear(); _attempts = 0; });
     try {
-      await ref.read(authControllerProvider).sendOtp(widget.phone, widget.cc);
-      _startTimer();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('New code sent!')));
-    } catch (_) {}
+      final r = await ref.read(authControllerProvider).sendOtp(widget.phone, widget.cc);
+      if (!mounted) return;
+      if (r['success'] == true) {
+        _startTimer();
+        _focusNode.requestFocus();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(children: [
+              Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 18),
+              SizedBox(width: 8),
+              Text('New code sent!'),
+            ]),
+            backgroundColor: Colors.green.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      } else {
+        setState(() => _error = r['message'] ?? 'Failed to resend.');
+      }
+    } catch (_) {
+      setState(() => _error = 'Could not resend. Try again.');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
+
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final pinTheme = PinTheme(width: 56, height: 62,
-      textStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: dark ? AppTheme.dText : AppTheme.lText),
-      decoration: BoxDecoration(color: dark ? AppTheme.dInput : AppTheme.lInput, borderRadius: BorderRadius.circular(14)));
+    final wide = MediaQuery.sizeOf(context).width >= 800;
+
+    final basePinTheme = PinTheme(
+      width: 54, height: 60,
+      textStyle: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.w800,
+        color: dark ? Colors.white : AppTheme.lText,
+      ),
+      decoration: BoxDecoration(
+        color: dark ? const Color(0xFF1E1E1E) : Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: dark ? const Color(0xFF2E2E2E) : Colors.grey.shade200),
+      ),
+    );
+
+    final focusedTheme = basePinTheme.copyWith(
+      decoration: basePinTheme.decoration?.copyWith(
+        border: Border.all(color: AppTheme.orange, width: 2),
+        color: dark ? const Color(0xFF1E1E1E) : Colors.white,
+        boxShadow: [BoxShadow(color: AppTheme.orange.withOpacity(0.15), blurRadius: 8)],
+      ),
+    );
+
+    final errorTheme = basePinTheme.copyWith(
+      decoration: basePinTheme.decoration?.copyWith(
+        border: Border.all(color: Colors.red, width: 2),
+        color: Colors.red.shade50,
+      ),
+    );
+
+    final successTheme = basePinTheme.copyWith(
+      decoration: basePinTheme.decoration?.copyWith(
+        border: Border.all(color: Colors.green.shade400, width: 2),
+        color: Colors.green.shade50,
+      ),
+      textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.green),
+    );
+
     return Scaffold(
-      appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => context.pop())),
-      body: SafeArea(child: Padding(padding: const EdgeInsets.all(28), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const SizedBox(height: 16),
-        const Text('Verify your number', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 28, letterSpacing: -0.5)),
-        const SizedBox(height: 10),
-        RichText(text: TextSpan(style: TextStyle(color: dark ? AppTheme.dSub : AppTheme.lSub, fontSize: 15, height: 1.5), children: [
-          const TextSpan(text: "We sent a 6-digit code to\n"),
-          TextSpan(text: '${widget.cc} ${widget.phone}', style: const TextStyle(color: AppTheme.orange, fontWeight: FontWeight.w700)),
-        ])),
-        const SizedBox(height: 36),
-        Center(child: Pinput(length: 6, controller: _ctrl, autofocus: true,
-          defaultPinTheme: pinTheme,
-          focusedPinTheme: pinTheme.copyWith(decoration: pinTheme.decoration?.copyWith(border: Border.all(color: AppTheme.orange, width: 2))),
-          errorPinTheme: pinTheme.copyWith(decoration: pinTheme.decoration?.copyWith(border: Border.all(color: Colors.red, width: 2))),
-          onCompleted: _verify)),
-        if (_e != null) Padding(padding: const EdgeInsets.only(top: 16), child: Center(child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.error_outline_rounded, color: Colors.red, size: 16), const SizedBox(width: 6), Flexible(child: Text(_e!, style: const TextStyle(color: Colors.red, fontSize: 14), textAlign: TextAlign.center))]))),
-        if (_l) const Padding(padding: EdgeInsets.only(top: 24), child: Center(child: CircularProgressIndicator(color: AppTheme.orange))),
-        const SizedBox(height: 28),
-        Center(child: _canResend
-          ? GestureDetector(onTap: _resend, child: const Text('Resend Code', style: TextStyle(color: AppTheme.orange, fontWeight: FontWeight.w700, fontSize: 15)))
-          : RichText(text: TextSpan(style: TextStyle(color: dark ? AppTheme.dSub : AppTheme.lSub, fontSize: 14), children: [
-              const TextSpan(text: 'Resend code in '),
-              TextSpan(text: '${_sec}s', style: const TextStyle(color: AppTheme.orange, fontWeight: FontWeight.w700)),
-            ]))),
-        const SizedBox(height: 16),
-        Center(child: GestureDetector(onTap: () => context.pop(), child: Text('Wrong number? Change it', style: TextStyle(color: dark ? AppTheme.dSub : AppTheme.lSub, fontSize: 13)))),
-      ]))),
+      backgroundColor: dark ? AppTheme.dBg : const Color(0xFFF6F2EE),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_rounded, color: dark ? Colors.white : AppTheme.lText),
+          onPressed: () => context.pop(),
+        ),
+        title: Text('Verify Phone', style: TextStyle(fontWeight: FontWeight.w700, color: dark ? Colors.white : AppTheme.lText, fontSize: 16)),
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: wide ? 440 : double.infinity),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: wide ? 0 : 28, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+
+                // Icon
+                Container(
+                  width: 72, height: 72,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [AppTheme.orange, Color(0xFFE64A19)]),
+                    borderRadius: BorderRadius.circular(22),
+                    boxShadow: [BoxShadow(color: AppTheme.orange.withOpacity(0.3), blurRadius: 16, offset: const Offset(0, 6))],
+                  ),
+                  child: const Icon(Icons.sms_rounded, color: Colors.white, size: 34),
+                ).animate().fadeIn().scale(begin: const Offset(0.7, 0.7)),
+
+                const SizedBox(height: 28),
+
+                Text('Check your messages',
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 28,
+                      color: dark ? Colors.white : AppTheme.lText, letterSpacing: -0.5),
+                ).animate().fadeIn(delay: 100.ms).slideX(begin: -0.2),
+
+                const SizedBox(height: 12),
+
+                RichText(text: TextSpan(
+                  style: TextStyle(fontSize: 15, height: 1.6,
+                      color: dark ? AppTheme.dSub : AppTheme.lSub),
+                  children: [
+                    const TextSpan(text: "We sent a 6-digit code to\n"),
+                    TextSpan(
+                      text: '${widget.cc} ${_formatPhone(widget.phone)}',
+                      style: const TextStyle(color: AppTheme.orange, fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                )).animate().fadeIn(delay: 200.ms),
+
+                // Dev hint (only in debug/dev mode)
+                if (widget.devCode != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade50,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.amber.shade300),
+                    ),
+                    child: Row(children: [
+                      const Icon(Icons.bug_report_rounded, color: Colors.amber, size: 16),
+                      const SizedBox(width: 8),
+                      Text('Dev code: ${widget.devCode}',
+                        style: TextStyle(color: Colors.amber.shade800, fontSize: 13, fontWeight: FontWeight.w600)),
+                    ]),
+                  ).animate().fadeIn(delay: 300.ms),
+                ],
+
+                const SizedBox(height: 44),
+
+                // PIN input
+                Center(
+                  child: AnimatedBuilder(
+                    animation: _shake,
+                    builder: (_, child) => Transform.translate(
+                      offset: Offset((_error != null && !_success)
+                          ? 12 * (0.5 - (_shake.value % 1).abs()) * 2 : 0, 0),
+                      child: child,
+                    ),
+                    child: Pinput(
+                      length: 6,
+                      controller: _ctrl,
+                      focusNode: _focusNode,
+                      autofocus: true,
+                      hapticFeedbackType: HapticFeedbackType.lightImpact,
+                      animationCurve: Curves.easeInOut,
+                      animationDuration: const Duration(milliseconds: 150),
+                      defaultPinTheme: basePinTheme,
+                      focusedPinTheme: focusedTheme,
+                      errorPinTheme: errorTheme,
+                      submittedPinTheme: _success ? successTheme : basePinTheme.copyWith(
+                        decoration: basePinTheme.decoration?.copyWith(
+                          border: Border.all(color: AppTheme.orange.withOpacity(0.5)),
+                          color: AppTheme.orange.withOpacity(0.06),
+                        ),
+                      ),
+                      onCompleted: _verify,
+                      closeKeyboardWhenCompleted: true,
+                    ),
+                  ),
+                ).animate().fadeIn(delay: 300.ms),
+
+                const SizedBox(height: 28),
+
+                // Status / error
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: _success
+                    ? _StatusCard(
+                        key: const ValueKey('ok'),
+                        icon: Icons.check_circle_rounded,
+                        color: Colors.green.shade600,
+                        bg: Colors.green.shade50,
+                        text: 'Verified! Logging you in...',
+                      )
+                    : _loading
+                      ? Center(
+                          key: const ValueKey('loading'),
+                          child: Column(children: [
+                            const CircularProgressIndicator(color: AppTheme.orange, strokeWidth: 2.5),
+                            const SizedBox(height: 10),
+                            Text('Verifying...', style: TextStyle(color: dark ? AppTheme.dSub : AppTheme.lSub, fontSize: 13)),
+                          ]),
+                        )
+                      : _error != null
+                        ? _StatusCard(
+                            key: const ValueKey('err'),
+                            icon: Icons.error_outline_rounded,
+                            color: Colors.red.shade600,
+                            bg: Colors.red.shade50,
+                            text: _error!,
+                            trailing: _attempts >= 3 ? 'Try resending the code' : null,
+                          )
+                        : const SizedBox.shrink(key: ValueKey('none')),
+                ),
+
+                const SizedBox(height: 36),
+
+                // Resend section
+                Center(
+                  child: _canResend
+                    ? Column(children: [
+                        Text("Didn't receive the code?",
+                          style: TextStyle(color: dark ? AppTheme.dSub : AppTheme.lSub, fontSize: 14)),
+                        const SizedBox(height: 10),
+                        TextButton(
+                          onPressed: _loading ? null : _resend,
+                          child: const Text('Resend Code',
+                            style: TextStyle(color: AppTheme.orange, fontWeight: FontWeight.w700, fontSize: 15)),
+                        ),
+                      ])
+                    : Column(children: [
+                        Text("Resend code in",
+                          style: TextStyle(color: dark ? AppTheme.dSub : AppTheme.lSub, fontSize: 13)),
+                        const SizedBox(height: 6),
+                        _CountdownRing(secs: _secs, total: 60),
+                      ]),
+                ).animate().fadeIn(delay: 500.ms),
+
+                const SizedBox(height: 24),
+
+                // Wrong number
+                Center(
+                  child: TextButton(
+                    onPressed: () => context.pop(),
+                    child: Text('Wrong number? Go back',
+                      style: TextStyle(
+                        color: dark ? AppTheme.dSub : Colors.grey.shade500,
+                        fontSize: 13,
+                        decoration: TextDecoration.underline,
+                      )),
+                  ),
+                ).animate().fadeIn(delay: 600.ms),
+
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
+
+  String _formatPhone(String p) {
+    if (p.length <= 4) return p;
+    final visible = p.substring(p.length - 4);
+    return '••• ••• $visible';
+  }
+}
+
+// ─────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────
+
+class _StatusCard extends StatelessWidget {
+  final IconData icon;
+  final Color color, bg;
+  final String text;
+  final String? trailing;
+
+  const _StatusCard({
+    super.key,
+    required this.icon, required this.color, required this.bg, required this.text,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    decoration: BoxDecoration(
+      color: bg, borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: color.withOpacity(0.3)),
+    ),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        Icon(icon, color: color, size: 18),
+        const SizedBox(width: 8),
+        Expanded(child: Text(text, style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13))),
+      ]),
+      if (trailing != null) Padding(
+        padding: const EdgeInsets.only(top: 4, left: 26),
+        child: Text(trailing!, style: TextStyle(color: color.withOpacity(0.8), fontSize: 12)),
+      ),
+    ]),
+  );
+}
+
+class _CountdownRing extends StatelessWidget {
+  final int secs, total;
+  const _CountdownRing({required this.secs, required this.total});
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 64, height: 64,
+    child: Stack(alignment: Alignment.center, children: [
+      CircularProgressIndicator(
+        value: secs / total,
+        strokeWidth: 3,
+        backgroundColor: Colors.grey.shade200,
+        valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.orange),
+      ),
+      Text('${secs}s', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.orange)),
+    ]),
+  );
 }

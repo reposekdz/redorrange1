@@ -111,7 +111,9 @@ exports.verifyOtp = async (req, res) => {
 // POST /api/auth/setup-profile
 exports.setupProfile = async (req, res) => {
   try {
-    const { username, display_name, bio } = req.body;
+    const {
+      username, display_name, bio, gender, location, website, birthday,
+    } = req.body;
     if (!username) return res.status(400).json({ success: false, message: 'Username required' });
     if (!/^[a-zA-Z0-9_.]{3,30}$/.test(username))
       return res.status(400).json({ success: false, message: 'Username: 3-30 chars, letters/numbers/dots/underscores only' });
@@ -123,8 +125,24 @@ exports.setupProfile = async (req, res) => {
     if (req.file) avatarUrl = getFileUrl(req, req.file.path);
 
     await db.query(
-      'UPDATE users SET username=?, display_name=?, bio=?, avatar_url=COALESCE(?,avatar_url), updated_at=NOW() WHERE id=?',
-      [username, display_name || username, bio || null, avatarUrl, req.userId]
+      `UPDATE users SET
+        username=?, display_name=?, bio=?,
+        avatar_url=COALESCE(?,avatar_url),
+        gender=COALESCE(?,gender),
+        location=COALESCE(?,location),
+        website=COALESCE(?,website),
+        birthday=COALESCE(?,birthday),
+        updated_at=NOW()
+       WHERE id=?`,
+      [
+        username, display_name || username, bio || null,
+        avatarUrl,
+        gender || null,
+        location || null,
+        website || null,
+        birthday || null,
+        req.userId,
+      ]
     );
     const user = await db.queryOne('SELECT * FROM users WHERE id=?', [req.userId]);
     res.json({ success: true, user });
