@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
@@ -137,7 +138,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final wide = MediaQuery.sizeOf(context).width >= 800;
+    final wide = kIsWeb || MediaQuery.sizeOf(context).width >= 600;
 
     final basePinTheme = PinTheme(
       width: 54, height: 60,
@@ -176,22 +177,11 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
       textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.green),
     );
 
-    return Scaffold(
-      backgroundColor: dark ? AppTheme.dBg : const Color(0xFFF6F2EE),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: dark ? Colors.white : AppTheme.lText),
-          onPressed: () => context.pop(),
-        ),
-        title: Text('Verify Phone', style: TextStyle(fontWeight: FontWeight.w700, color: dark ? Colors.white : AppTheme.lText, fontSize: 16)),
-      ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: wide ? 440 : double.infinity),
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: wide ? 0 : 28, vertical: 20),
+    final formBody = Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: wide ? 440 : double.infinity),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: wide ? 48 : 28, vertical: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -359,7 +349,144 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
             ),
           ),
         ),
+    );
+
+    if (wide) {
+      return Scaffold(
+        backgroundColor: dark ? AppTheme.dBg : const Color(0xFFF6F2EE),
+        body: Row(children: [
+          // ── LEFT: OTP info panel
+          Expanded(
+            flex: 45,
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppTheme.orange, Color(0xFFE64A19), Color(0xFFBF360C)],
+                  stops: [0.0, 0.5, 1.0],
+                ),
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(44),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 80, height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 24, offset: const Offset(0, 8))],
+                        ),
+                        child: const Center(child: Icon(Icons.sms_rounded, color: Colors.white, size: 40)),
+                      ).animate().fadeIn().scale(begin: const Offset(0.7, 0.7)),
+
+                      const SizedBox(height: 36),
+
+                      const Text('One step away!',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 38,
+                            letterSpacing: -1.2, height: 1.1),
+                      ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.3),
+
+                      const SizedBox(height: 16),
+
+                      const Text(
+                        'We sent a verification code to your phone. Enter it to confirm your identity and get started.',
+                        style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.65),
+                      ).animate().fadeIn(delay: 350.ms),
+
+                      const SizedBox(height: 40),
+
+                      _OtpInfoRow(icon: Icons.lock_rounded, text: 'Your code expires in 10 minutes')
+                        .animate().fadeIn(delay: 500.ms).slideX(begin: -0.2),
+                      const SizedBox(height: 16),
+                      _OtpInfoRow(icon: Icons.refresh_rounded, text: 'Didn\'t receive it? Request a new code after 60 seconds')
+                        .animate().fadeIn(delay: 620.ms).slideX(begin: -0.2),
+                      const SizedBox(height: 16),
+                      _OtpInfoRow(icon: Icons.verified_user_rounded, text: 'Never share your code with anyone')
+                        .animate().fadeIn(delay: 740.ms).slideX(begin: -0.2),
+
+                      const SizedBox(height: 40),
+
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.white.withOpacity(0.2)),
+                        ),
+                        child: Row(children: [
+                          const Icon(Icons.info_outline_rounded, color: Colors.white70, size: 18),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text.rich(TextSpan(
+                              style: const TextStyle(color: Colors.white70, fontSize: 13.5, height: 1.5),
+                              children: [
+                                const TextSpan(text: 'Sending code to '),
+                                TextSpan(text: '${widget.cc} ${_formatPhone(widget.phone)}',
+                                  style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.white)),
+                              ],
+                            )),
+                          ),
+                        ]),
+                      ).animate().fadeIn(delay: 900.ms),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Divider
+          Container(width: 1, color: dark ? AppTheme.dDiv : const Color(0xFFE8E8E8)),
+
+          // ── RIGHT: OTP form
+          Expanded(
+            flex: 55,
+            child: Container(
+              color: dark ? AppTheme.dBg : Colors.white,
+              child: Column(children: [
+                SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(children: [
+                      IconButton(
+                        icon: Icon(Icons.arrow_back_rounded,
+                            color: dark ? Colors.white : AppTheme.lText),
+                        onPressed: () => context.pop(),
+                      ),
+                      Text('Verify Phone',
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16,
+                            color: dark ? Colors.white : AppTheme.lText)),
+                    ]),
+                  ),
+                ),
+                Expanded(child: formBody),
+              ]),
+            ),
+          ),
+        ]),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: dark ? AppTheme.dBg : const Color(0xFFF6F2EE),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_rounded, color: dark ? Colors.white : AppTheme.lText),
+          onPressed: () => context.pop(),
+        ),
+        title: Text('Verify Phone', style: TextStyle(fontWeight: FontWeight.w700,
+            color: dark ? Colors.white : AppTheme.lText, fontSize: 16)),
       ),
+      body: formBody,
     );
   }
 
@@ -423,5 +550,31 @@ class _CountdownRing extends StatelessWidget {
       ),
       Text('${secs}s', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.orange)),
     ]),
+  );
+}
+
+class _OtpInfoRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  const _OtpInfoRow({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Container(
+        width: 32, height: 32,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(9),
+        ),
+        child: Icon(icon, color: Colors.white, size: 17),
+      ),
+      const SizedBox(width: 12),
+      Expanded(
+        child: Text(text,
+          style: const TextStyle(color: Colors.white70, fontSize: 14, height: 1.5)),
+      ),
+    ],
   );
 }
