@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'core/router/app_router.dart';
@@ -11,32 +12,37 @@ import 'core/services/socket_service.dart';
 import 'core/services/push_service.dart';
 import 'features/overlay/app_overlay.dart';
 
-// Stripe publishable key — passed at build time via --dart-define
 const _stripeKey = String.fromEnvironment(
   'STRIPE_PUBLISHABLE_KEY',
-  defaultValue: 'pk_test_your_stripe_key_here',
+  defaultValue: 'pk_test_placeholder',
 );
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.dark,
-  ));
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight,
-  ]);
+  if (!kIsWeb) {
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ));
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+  }
 
-  // Initialize Stripe (real SDK — no Firebase)
-  Stripe.publishableKey = _stripeKey;
-  Stripe.merchantIdentifier = 'com.redorrange.app'; // Apple Pay
-  Stripe.urlScheme = 'redorrange';                  // Deep link return
-  await Stripe.instance.applySettings();
+  // Initialize Stripe (safe on both web and native)
+  try {
+    Stripe.publishableKey = _stripeKey;
+    if (!kIsWeb) {
+      Stripe.merchantIdentifier = 'com.redorrange.app';
+      Stripe.urlScheme = 'redorrange';
+    }
+    await Stripe.instance.applySettings();
+  } catch (_) {}
 
-  // Initialize local push notifications (WebSocket-driven)
+  // Local push notifications (no-op on web, uses browser Notification API)
   await PushService.init();
 
   runApp(const ProviderScope(child: RedOrrangeApp()));
@@ -46,6 +52,7 @@ class RedOrrangeApp extends ConsumerStatefulWidget {
   const RedOrrangeApp({super.key});
   @override ConsumerState<RedOrrangeApp> createState() => _S();
 }
+
 class _S extends ConsumerState<RedOrrangeApp> {
   @override
   void initState() {
@@ -55,7 +62,6 @@ class _S extends ConsumerState<RedOrrangeApp> {
         if (user != null) {
           final socket = ref.read(socketServiceProvider);
           socket.connect();
-          // Attach push notifications to socket events
           PushService.attachToSocket(socket);
           ref.read(notificationProviderInstance.notifier).refresh();
         }
@@ -74,7 +80,8 @@ class _S extends ConsumerState<RedOrrangeApp> {
       darkTheme:  AppTheme.dark,
       themeMode:  themeMode,
       routerConfig: router,
-      builder: (ctx, child) => child == null ? const SizedBox.shrink() : AppOverlay(child: child),
+      builder: (ctx, child) =>
+          child == null ? const SizedBox.shrink() : AppOverlay(child: child),
     );
   }
 }

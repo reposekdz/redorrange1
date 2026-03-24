@@ -581,7 +581,6 @@ class _ScanQRBody extends StatelessWidget {
       MobileScanner(
         controller: ctrl,
         onDetect: onDetected,
-        overlay: null,
       ),
 
       // Dark overlay with cutout

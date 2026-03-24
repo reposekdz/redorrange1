@@ -1,10 +1,19 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'dart:async';
 import 'api_service.dart';
 import 'push_service.dart';
 
-const _wsBase = String.fromEnvironment('WS_URL', defaultValue: 'http://10.0.2.2:3000');
+String get _resolvedWsBase {
+  if (kIsWeb) {
+    final uri = Uri.base;
+    final port = uri.port;
+    final portStr = (port == 0 || port == 80 || port == 443) ? '' : ':$port';
+    return '${uri.scheme}://${uri.host}$portStr';
+  }
+  return const String.fromEnvironment('WS_URL', defaultValue: 'http://10.0.2.2:3000');
+}
 
 final socketServiceProvider = Provider<SocketService>((ref) => SocketService(ref.read(apiServiceProvider)));
 
@@ -28,8 +37,8 @@ class SocketService {
     if (token == null) return;
 
     _socket?.dispose();
-    _socket = io.io(_wsBase, io.OptionBuilder()
-      .setTransports(['websocket'])
+    _socket = io.io(_resolvedWsBase, io.OptionBuilder()
+      .setTransports(kIsWeb ? ['websocket', 'polling'] : ['websocket'])
       .setAuth({'token': token})
       .setReconnectionDelay(2000)
       .setReconnectionDelayMax(10000)
@@ -39,7 +48,6 @@ class SocketService {
       .setTimeout(20000)
       .build());
 
-    // Attach push notifications to socket events
     PushService.attachToSocket(this);
     _socket!.onConnect((_) {
       _connected = true;
@@ -61,9 +69,7 @@ class SocketService {
     });
 
     _socket!.onReconnectAttempt((_) => _reconnectAttempts++);
-
-    _socket!.on('pong_server', (_) {}); // heartbeat ack
-
+    _socket!.on('pong_server', (_) {});
     _socket!.onError((e) {});
     _socket!.onConnectError((e) {});
 
@@ -85,7 +91,6 @@ class SocketService {
     }
   }
 
-  /// Register event listener. Survives reconnects.
   void on(String event, void Function(dynamic) cb) {
     _handlers.putIfAbsent(event, () => []);
     if (!_handlers[event]!.contains(cb)) {
@@ -94,7 +99,6 @@ class SocketService {
     _socket?.on(event, cb);
   }
 
-  /// Remove event listener.
   void off(String event, [void Function(dynamic)? cb]) {
     if (cb != null) {
       _handlers[event]?.remove(cb);
@@ -204,7 +208,6 @@ class SocketService {
   void updateStatus(String? text)   => emit('update_status', {'status_text': text});
   void setPresence(String presence) => emit('set_presence',  {'presence': presence});
 
-  /// Check if a batch of users are online
   void requestOnlineStatus(List<String> userIds) =>
     emit('request_online_status', {'user_ids': userIds});
 

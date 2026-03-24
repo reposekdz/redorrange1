@@ -1,9 +1,18 @@
 // lib/core/services/api_service.dart
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-const _base = String.fromEnvironment('API_URL', defaultValue: 'http://10.0.2.2:3000/api');
+String get _resolvedBase {
+  if (kIsWeb) {
+    final uri = Uri.base;
+    final port = uri.port;
+    final portStr = (port == 0 || port == 80 || port == 443) ? '' : ':$port';
+    return '${uri.scheme}://${uri.host}$portStr/api';
+  }
+  return const String.fromEnvironment('API_URL', defaultValue: 'http://10.0.2.2:3000/api');
+}
 
 final apiServiceProvider = Provider<ApiService>((ref) => ApiService());
 
@@ -13,7 +22,7 @@ class ApiService {
 
   ApiService() {
     _dio = Dio(BaseOptions(
-      baseUrl: _base,
+      baseUrl: _resolvedBase,
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 60),
       sendTimeout: const Duration(seconds: 60),
@@ -46,6 +55,7 @@ class ApiService {
   Future<Response> post(String path, {dynamic data, Map<String, dynamic>? q}) => _dio.post(path, data: data, queryParameters: q);
   Future<Response> put(String path, {dynamic data}) => _dio.put(path, data: data);
   Future<Response> delete(String path, {dynamic data}) => _dio.delete(path, data: data);
+  Future<Response> patch(String path, {dynamic data}) => _dio.patch(path, data: data);
   Future<Response> upload(String path, FormData fd, {void Function(int,int)? onProgress}) =>
     _dio.post(path, data: fd, options: Options(headers: {'Content-Type': 'multipart/form-data'}), onSendProgress: onProgress);
 
