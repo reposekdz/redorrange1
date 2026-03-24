@@ -11,7 +11,7 @@ class AppearanceScreen extends ConsumerStatefulWidget {
 }
 class _S extends ConsumerState<AppearanceScreen> {
   double _fontSize = 1.0;
-  static const _themes = [(ThemeMode.system, 'System Default', Icons.settings_suggest_rounded), (ThemeMode.light, 'Light', Icons.light_mode_rounded), (ThemeMode.dark, 'Dark', Icons.dark_mode_rounded)];
+  static final _themes = [[ThemeMode.system, 'System Default', Icons.settings_suggest_rounded], [ThemeMode.light, 'Light', Icons.light_mode_rounded], [ThemeMode.dark, 'Dark', Icons.dark_mode_rounded]];
   static const _accents = [Colors.orange, Color(0xFF2196F3), Color(0xFF4CAF50), Color(0xFF9C27B0), Colors.pink, Colors.red, Colors.teal];
 
   @override Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class _S extends ConsumerState<AppearanceScreen> {
       body: ListView(padding: const EdgeInsets.all(16), children: [
         const Text('Theme', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
         const SizedBox(height: 10),
-        Row(children: _themes.map((e) { final mode = e.$1; final label = e.$2; final icon = e.$3;
+        Row(children: _themes.map((e) { final mode = e[0] as ThemeMode; final label = e[1] as String; final icon = e[2] as IconData;
           final sel = themeMode == mode;
           return Expanded(child: GestureDetector(onTap: () => ref.read(themeModeProvider.notifier).set(mode), child: AnimatedContainer(duration: const Duration(milliseconds: 200), margin: const EdgeInsets.symmetric(horizontal: 4), padding: const EdgeInsets.symmetric(vertical: 14), decoration: BoxDecoration(color: sel ? AppTheme.orange : (dark ? AppTheme.dCard : Colors.white), borderRadius: BorderRadius.circular(14), border: Border.all(color: sel ? AppTheme.orange : Colors.transparent, width: 2)),
             child: Column(children: [Icon(icon, color: sel ? Colors.white : null, size: 26), const SizedBox(height: 6), Text(label, style: TextStyle(color: sel ? Colors.white : null, fontWeight: sel ? FontWeight.w700 : FontWeight.w500, fontSize: 12), textAlign: TextAlign.center)]))));

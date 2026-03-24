@@ -12,7 +12,7 @@ class DisappearingMessagesScreen extends ConsumerStatefulWidget {
 }
 class _S extends ConsumerState<DisappearingMessagesScreen> {
   int _timer = 0; bool _saving = false;
-  static const _opts = [(0, 'Off'), (3600, '1 hour'), (86400, '24 hours'), (604800, '7 days'), (2592000, '30 days')];
+  static const _opts = [[0, 'Off'], [3600, '1 hour'], [86400, '24 hours'], [604800, '7 days'], [2592000, '30 days']];
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class _S extends ConsumerState<DisappearingMessagesScreen> {
       appBar: AppBar(title: const Text('Disappearing Messages', style: TextStyle(fontWeight: FontWeight.w800))),
       body: Column(children: [
         Container(margin: const EdgeInsets.all(14), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: dark ? AppTheme.dCard : AppTheme.orangeSurf, borderRadius: BorderRadius.circular(12)), child: const Row(children: [Icon(Icons.timer_rounded, color: AppTheme.orange, size: 22), SizedBox(width: 10), Expanded(child: Text('Messages will automatically disappear after the timer. Both sides are affected.', style: TextStyle(color: AppTheme.orangeDark, fontSize: 13, height: 1.4)))])),
-        Expanded(child: ListView(children: _opts.map((e) { final secs = e.$1; final label = e.$2; return RadioListTile<int>(
+        Expanded(child: ListView(children: _opts.map((e) { final secs = e[0] as int; final label = e[1] as String; return RadioListTile<int>(
           value: secs, groupValue: _timer,
           onChanged: (v) => setState(() => _timer = v!),
           title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
@@ -33,7 +33,7 @@ class _S extends ConsumerState<DisappearingMessagesScreen> {
           onPressed: _saving ? null : () async {
             setState(() => _saving = true);
             await ref.read(apiServiceProvider).put('/messages/conversations/${widget.convId}/disappearing', data: {'timer': _timer}).catchError((_){});
-            if (mounted) { context.pop(); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_timer == 0 ? 'Disappearing messages turned off' : 'Disappearing messages set to ${_opts.firstWhere((o) => o.$1 == _timer).$2}'))); }
+            if (mounted) { context.pop(); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_timer == 0 ? 'Disappearing messages turned off' : 'Disappearing messages set to ${_opts.firstWhere((o) => o[0] == _timer)[1]}'))); }
           },
           style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
           child: _saving ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2) : const Text('Save', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),

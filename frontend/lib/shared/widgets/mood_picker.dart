@@ -5,17 +5,17 @@ import '../../core/theme/app_theme.dart';
 import '../../core/services/api_service.dart';
 import '../../core/providers/auth_provider.dart';
 
-const _moods = [
-  ('happy',    Icons.sentiment_very_satisfied_rounded, '😊 Happy',      Color(0xFFFFC107)),
-  ('excited',  Icons.celebration_rounded,              '🎉 Excited',    Color(0xFFFF9800)),
-  ('working',  Icons.laptop_mac_rounded,               '💻 Working',    Color(0xFF2196F3)),
-  ('studying', Icons.menu_book_rounded,                '📚 Studying',   Color(0xFF9C27B0)),
-  ('gym',      Icons.fitness_center_rounded,           '💪 At the gym', Color(0xFF4CAF50)),
-  ('travel',   Icons.flight_rounded,                   '✈️ Travelling', Color(0xFF00BCD4)),
-  ('music',    Icons.music_note_rounded,               '🎵 Listening',  Color(0xFFE91E63)),
-  ('sleeping', Icons.bedtime_rounded,                  '😴 Sleeping',   Color(0xFF607D8B)),
-  ('eating',   Icons.restaurant_rounded,               '🍴 Eating',     Color(0xFFFF5722)),
-  ('busy',     Icons.do_not_disturb_on_rounded,        '🔴 Do not disturb', Colors.red),
+final _moods = [
+  ['happy',    Icons.sentiment_very_satisfied_rounded, '😊 Happy',      const Color(0xFFFFC107)],
+  ['excited',  Icons.celebration_rounded,              '🎉 Excited',    const Color(0xFFFF9800)],
+  ['working',  Icons.laptop_mac_rounded,               '💻 Working',    const Color(0xFF2196F3)],
+  ['studying', Icons.menu_book_rounded,                '📚 Studying',   const Color(0xFF9C27B0)],
+  ['gym',      Icons.fitness_center_rounded,           '💪 At the gym', const Color(0xFF4CAF50)],
+  ['travel',   Icons.flight_rounded,                   '✈️ Travelling', const Color(0xFF00BCD4)],
+  ['music',    Icons.music_note_rounded,               '🎵 Listening',  const Color(0xFFE91E63)],
+  ['sleeping', Icons.bedtime_rounded,                  '😴 Sleeping',   const Color(0xFF607D8B)],
+  ['eating',   Icons.restaurant_rounded,               '🍴 Eating',     const Color(0xFFFF5722)],
+  ['busy',     Icons.do_not_disturb_on_rounded,        '🔴 Do not disturb', Colors.red],
 ];
 
 class MoodPickerSheet extends ConsumerStatefulWidget {
@@ -59,7 +59,7 @@ class _S extends ConsumerState<MoodPickerSheet> {
         const SizedBox(height: 14),
         const Align(alignment: Alignment.centerLeft, child: Text('Quick Select', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.grey))),
         const SizedBox(height: 8),
-        Wrap(spacing: 8, runSpacing: 8, children: _moods.map((e) { final type = e.$1; final icon = e.$2; final label = e.$3; final color = e.$4; return GestureDetector(
+        Wrap(spacing: 8, runSpacing: 8, children: _moods.map((e) { final type = e[0] as String; final icon = e[1] as IconData; final label = e[2] as String; final color = e[3] as Color; return GestureDetector(
           onTap: () => setState(() => _selected = type),
           child: AnimatedContainer(duration: const Duration(milliseconds: 150), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(color: _selected == type ? color.withOpacity(0.15) : (dark ? AppTheme.dInput : AppTheme.lInput), borderRadius: BorderRadius.circular(20), border: Border.all(color: _selected == type ? color : Colors.transparent, width: 1.5)),

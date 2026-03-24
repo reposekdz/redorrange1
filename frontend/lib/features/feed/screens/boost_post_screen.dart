@@ -18,7 +18,7 @@ class _S extends ConsumerState<BoostPostScreen> {
 
   static const _budgets = [5.0, 10.0, 25.0, 50.0, 100.0];
   static const _dayOptions = [3, 7, 14, 30];
-  static const _goals = [('reach', Icons.people_rounded, 'More Reach', 'Show your post to more people'), ('clicks', Icons.touch_app_rounded, 'Link Clicks', 'Drive traffic to your profile'), ('followers', Icons.person_add_rounded, 'Get Followers', 'Gain more followers')];
+  static final _goals = [['reach', Icons.people_rounded, 'More Reach', 'Show your post to more people'], ['clicks', Icons.touch_app_rounded, 'Link Clicks', 'Drive traffic to your profile'], ['followers', Icons.person_add_rounded, 'Get Followers', 'Gain more followers']];
 
   Future<void> _boost() async {
     setState(() => _saving = true);
@@ -50,7 +50,7 @@ class _S extends ConsumerState<BoostPostScreen> {
         // Goal
         const Text('Campaign Goal', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
         const SizedBox(height: 10),
-        ..._goals.map((e) { final type = e.$1; final icon = e.$2; final title = e.$3; final sub = e.$4; return GestureDetector(
+        ..._goals.map((e) { final type = e[0] as String; final icon = e[1] as IconData; final title = e[2] as String; final sub = e[3] as String; return GestureDetector(
           onTap: () => setState(() => _goal = type),
           child: AnimatedContainer(duration: const Duration(milliseconds: 150), margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(color: _goal == type ? AppTheme.orangeSurf : (dark ? AppTheme.dCard : Colors.white), borderRadius: BorderRadius.circular(12), border: Border.all(color: _goal == type ? AppTheme.orange : Colors.transparent, width: 1.5)),

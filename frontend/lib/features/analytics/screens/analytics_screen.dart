@@ -189,7 +189,7 @@ class _Audience extends StatelessWidget {
       Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: dark ? AppTheme.dCard : Colors.white, borderRadius: BorderRadius.circular(14)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Text('Age Groups', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
         const SizedBox(height: 12),
-        ...[('13–17', 5), ('18–24', 38), ('25–34', 32), ('35–44', 15), ('45+', 10)].map((e) { final age = e.$1; final pct = e.$2; return
+        ...[['13–17', 5], ['18–24', 38], ['25–34', 32], ['35–44', 15], ['45+', 10]].map((e) { final age = e[0] as String; final pct = e[1] as int; return
           Padding(padding: const EdgeInsets.only(bottom: 8), child: _PerfBar(age, pct, 100, AppTheme.orange)); }),
       ])),
       const SizedBox(height: 12),

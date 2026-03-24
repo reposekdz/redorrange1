@@ -15,7 +15,7 @@ class ReactionsScreen extends ConsumerStatefulWidget {
 class _S extends ConsumerState<ReactionsScreen> with SingleTickerProviderStateMixin {
   late TabController _tc;
   Map<String, List<dynamic>> _d = {}; bool _l = true;
-  static const _reacts = [('all', '❤️ All'), ('like', '👍 Like'), ('love', '❤️ Love'), ('haha', '😂 Haha'), ('wow', '😮 Wow'), ('sad', '😢 Sad'), ('angry', '😡 Angry')];
+  static const _reacts = [['all', '❤️ All'], ['like', '👍 Like'], ['love', '❤️ Love'], ['haha', '😂 Haha'], ['wow', '😮 Wow'], ['sad', '😢 Sad'], ['angry', '😡 Angry']];
 
   @override void initState() { super.initState(); _tc = TabController(length: _reacts.length, vsync: this); _load(); }
   @override void dispose() { _tc.dispose(); super.dispose(); }
@@ -26,7 +26,7 @@ class _S extends ConsumerState<ReactionsScreen> with SingleTickerProviderStateMi
       final all = List<dynamic>.from(r.data['users'] ?? []);
       setState(() {
         _d['all'] = all;
-        for (final (type, _) in _reacts.skip(1)) { _d[type] = all.where((u) => u['reaction_type'] == type).toList(); }
+        for (final e in _reacts.skip(1)) { final type = e[0] as String; _d[type] = all.where((u) => u['reaction_type'] == type).toList(); }
         _l = false;
       });
     } catch (_) { setState(() => _l = false); }
@@ -35,11 +35,11 @@ class _S extends ConsumerState<ReactionsScreen> with SingleTickerProviderStateMi
   @override Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: Text('${FormatUtils.count(_d['all']?.length ?? 0)} Reactions', style: const TextStyle(fontWeight: FontWeight.w800)),
       bottom: _l ? null : TabBar(controller: _tc, isScrollable: true, tabAlignment: TabAlignment.start, indicatorColor: AppTheme.orange, labelColor: AppTheme.orange, unselectedLabelColor: Colors.grey,
-        tabs: _reacts.map((e) { final type = e.$1; final label = e.$2;
+        tabs: _reacts.map((e) { final type = e[0] as String; final label = e[1] as String;
           final count = _d[type]?.length ?? 0;
           return Tab(text: '$label (${count > 0 ? FormatUtils.count(count) : ''})'.replaceAll(' ()', ''));
         }).toList())),
-    body: _l ? const Center(child: CircularProgressIndicator(color: AppTheme.orange)) : TabBarView(controller: _tc, children: _reacts.map((e) { final type = e.$1;
+    body: _l ? const Center(child: CircularProgressIndicator(color: AppTheme.orange)) : TabBarView(controller: _tc, children: _reacts.map((e) { final type = e[0] as String;
       final users = _d[type] ?? [];
       if (users.isEmpty) return const Center(child: Text('No reactions', style: TextStyle(color: Colors.grey)));
       return ListView.builder(itemCount: users.length, itemBuilder: (_, i) {

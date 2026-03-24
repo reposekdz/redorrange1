@@ -370,7 +370,7 @@ class _SI extends StatelessWidget {
   final String uid, label; final String? avatar; final bool hasStory, isViewed, isMine; final VoidCallback onTap;
   const _SI({required this.uid, required this.label, this.avatar, this.hasStory = false, this.isViewed = false, this.isMine = false, required this.onTap});
   @override Widget build(_) => GestureDetector(onTap: onTap, child: SizedBox(width: 70, child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-    StoryRing(url: avatar, size: 52, username: label, hasStory: hasStory, isViewed: isViewed, isMine: isMine),
+    StoryRing(hasStory: hasStory, isViewed: isViewed, size: 52, child: AppAvatar(url: avatar, size: 43, username: label)),
     const SizedBox(height: 4), Text(isMine ? 'Add Story' : label, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11)),
   ])));
 }

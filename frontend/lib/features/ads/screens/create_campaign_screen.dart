@@ -33,25 +33,25 @@ class _S extends ConsumerState<CreateCampaignScreen> {
   File? _mediaFile;
   bool _submitting = false;
 
-  static const _objectives = [
-    ('awareness',       Icons.visibility_rounded,   'Brand Awareness',   'Show your brand to as many people as possible'),
-    ('reach',           Icons.group_rounded,         'Maximum Reach',     'Reach the most unique people in your audience'),
-    ('traffic',         Icons.open_in_new_rounded,   'Website Traffic',   'Drive people to your website or landing page'),
-    ('engagement',      Icons.thumb_up_rounded,      'Engagement',        'Get more likes, comments, saves and shares'),
-    ('leads',           Icons.contact_mail_rounded,  'Lead Generation',   'Collect customer information and contacts'),
-    ('conversions',     Icons.shopping_cart_rounded, 'Conversions',       'Drive purchases, sign-ups or app actions'),
-    ('video_views',     Icons.play_circle_rounded,   'Video Views',       'Get more people to watch your video'),
-    ('follower_growth', Icons.person_add_rounded,    'Follower Growth',   'Increase your RedOrrange followers'),
-    ('app_installs',    Icons.phone_android_rounded, 'App Installs',      'Drive people to download your app'),
+  static final _objectives = [
+    ['awareness',       Icons.visibility_rounded,   'Brand Awareness',   'Show your brand to as many people as possible'],
+    ['reach',           Icons.group_rounded,         'Maximum Reach',     'Reach the most unique people in your audience'],
+    ['traffic',         Icons.open_in_new_rounded,   'Website Traffic',   'Drive people to your website or landing page'],
+    ['engagement',      Icons.thumb_up_rounded,      'Engagement',        'Get more likes, comments, saves and shares'],
+    ['leads',           Icons.contact_mail_rounded,  'Lead Generation',   'Collect customer information and contacts'],
+    ['conversions',     Icons.shopping_cart_rounded, 'Conversions',       'Drive purchases, sign-ups or app actions'],
+    ['video_views',     Icons.play_circle_rounded,   'Video Views',       'Get more people to watch your video'],
+    ['follower_growth', Icons.person_add_rounded,    'Follower Growth',   'Increase your RedOrrange followers'],
+    ['app_installs',    Icons.phone_android_rounded, 'App Installs',      'Drive people to download your app'],
   ];
 
-  static const _formats = [
-    ('image',   Icons.image_rounded,         'Image',    'Single photo ad'),
-    ('video',   Icons.videocam_rounded,      'Video',    'Short video ad'),
-    ('carousel',Icons.view_carousel_rounded, 'Carousel', 'Multiple images'),
-    ('story',   Icons.auto_stories_rounded,  'Story',    'Full screen 9:16'),
-    ('reel',    Icons.movie_creation_rounded,'Reel',     'Vertical video'),
-    ('collection',Icons.grid_on_rounded,     'Collection','Product showcase'),
+  static final _formats = [
+    ['image',   Icons.image_rounded,         'Image',    'Single photo ad'],
+    ['video',   Icons.videocam_rounded,      'Video',    'Short video ad'],
+    ['carousel',Icons.view_carousel_rounded, 'Carousel', 'Multiple images'],
+    ['story',   Icons.auto_stories_rounded,  'Story',    'Full screen 9:16'],
+    ['reel',    Icons.movie_creation_rounded,'Reel',     'Vertical video'],
+    ['collection',Icons.grid_on_rounded,     'Collection','Product showcase'],
   ];
 
   static const _ctaOptions = ['Learn More','Shop Now','Sign Up','Get Quote','Contact Us','Download','Book Now','Watch More','Apply Now','Subscribe','See Menu','Visit Website'];
@@ -157,7 +157,7 @@ class _S extends ConsumerState<CreateCampaignScreen> {
 
 // ── Step 1: Objective
 class _Step1 extends StatelessWidget {
-  final List<(String,IconData,String,String)> objectives; final String name, selected;
+  final List<List<dynamic>> objectives; final String name, selected;
   final void Function(String) onName, onSelect; final bool dark;
   const _Step1({required this.objectives, required this.name, required this.selected, required this.onName, required this.onSelect, required this.dark});
   @override Widget build(BuildContext _) => ListView(padding: const EdgeInsets.all(16), children: [
@@ -167,7 +167,7 @@ class _Step1 extends StatelessWidget {
     const SizedBox(height: 16),
     TextFormField(initialValue: name, onChanged: onName, decoration: const InputDecoration(labelText: 'Campaign Name *', hintText: 'e.g. Summer Sale 2025', prefixIcon: Icon(Icons.edit_rounded, size: 20))),
     const SizedBox(height: 16),
-    ...objectives.map((e) { final id = e.$1; final icon = e.$2; final objName = e.$3; final desc = e.$4; return GestureDetector(
+    ...objectives.map((e) { final id = e[0] as String; final icon = e[1] as IconData; final objName = e[2] as String; final desc = e[3] as String; return GestureDetector(
       onTap: () => onSelect(id),
       child: AnimatedContainer(duration: const Duration(milliseconds: 150), margin: const EdgeInsets.only(bottom: 10), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: selected == id ? AppTheme.orange : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(14), border: Border.all(color: selected == id ? AppTheme.orange : Colors.transparent, width: 2), boxShadow: [BoxShadow(color: selected == id ? AppTheme.orange.withOpacity(0.25) : Colors.black.withOpacity(0.04), blurRadius: 8)]),
         child: Row(children: [
@@ -191,11 +191,11 @@ class _Step2 extends StatelessWidget {
   const _Step2({required this.ageMin, required this.ageMax, required this.genders, required this.interests, required this.platforms, required this.estimate, required this.dark, required this.onAgeMin, required this.onAgeMax, required this.onGender, required this.onInterests, required this.onPlatforms});
 
   static const _interestList = [
-    ('technology','Technology'),('fashion','Fashion'),('food','Food & Cooking'),('fitness','Fitness'),
-    ('travel','Travel'),('music','Music'),('sports','Sports'),('gaming','Gaming'),
-    ('business','Business'),('education','Education'),('beauty','Beauty'),('finance','Finance'),
-    ('art','Art'),('parenting','Parenting'),('news','News'),('movies','Movies & TV'),
-    ('animals','Pets'),('automotive','Automotive'),('real_estate','Real Estate'),('startups','Startups'),
+    ['technology','Technology'],['fashion','Fashion'],['food','Food & Cooking'],['fitness','Fitness'],
+    ['travel','Travel'],['music','Music'],['sports','Sports'],['gaming','Gaming'],
+    ['business','Business'],['education','Education'],['beauty','Beauty'],['finance','Finance'],
+    ['art','Art'],['parenting','Parenting'],['news','News'],['movies','Movies & TV'],
+    ['animals','Pets'],['automotive','Automotive'],['real_estate','Real Estate'],['startups','Startups'],
   ];
 
   @override Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(16), children: [
@@ -212,18 +212,18 @@ class _Step2 extends StatelessWidget {
     ]),
 
     _Label('Gender'),
-    Wrap(spacing: 8, children: [('all','All Genders'), ('male','Male'), ('female','Female')].map((e) { final v = e.$1; final l = e.$2; return GestureDetector(onTap: () => onGender([v]), child: AnimatedContainer(duration: const Duration(milliseconds: 150), padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9), decoration: BoxDecoration(color: genders.contains(v) ? AppTheme.orange : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(20)), child: Text(l, style: TextStyle(color: genders.contains(v) ? Colors.white : null, fontWeight: FontWeight.w600)))); }).toList()),
+    Wrap(spacing: 8, children: [['all','All Genders'], ['male','Male'], ['female','Female']].map((e) { final v = e[0]; final l = e[1]; return GestureDetector(onTap: () => onGender([v]), child: AnimatedContainer(duration: const Duration(milliseconds: 150), padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9), decoration: BoxDecoration(color: genders.contains(v) ? AppTheme.orange : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(20)), child: Text(l, style: TextStyle(color: genders.contains(v) ? Colors.white : null, fontWeight: FontWeight.w600)))); }).toList()),
     const SizedBox(height: 14),
 
     _Label('Interests'),
-    Wrap(spacing: 8, runSpacing: 8, children: _interestList.map((e) { final id = e.$1; final intName = e.$2; return GestureDetector(
+    Wrap(spacing: 8, runSpacing: 8, children: _interestList.map((e) { final id = e[0]; final intName = e[1]; return GestureDetector(
       onTap: () { final list = List<String>.from(interests); list.contains(id) ? list.remove(id) : list.add(id); onInterests(list); },
       child: AnimatedContainer(duration: const Duration(milliseconds: 150), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7), decoration: BoxDecoration(color: interests.contains(id) ? AppTheme.orange : AppTheme.orangeSurf, borderRadius: BorderRadius.circular(20)), child: Text(intName, style: TextStyle(color: interests.contains(id) ? Colors.white : AppTheme.orange, fontWeight: FontWeight.w600, fontSize: 12))),
     ); }).toList()),
     const SizedBox(height: 14),
 
     _Label('Platforms'),
-    Wrap(spacing: 8, runSpacing: 8, children: [('all','All',Icons.devices_rounded), ('android','Android',Icons.phone_android_rounded), ('ios','iOS',Icons.phone_iphone_rounded), ('web','Web',Icons.language_rounded)].map((e) { final v = e.$1; final l = e.$2; final i = e.$3; return GestureDetector(
+    Wrap(spacing: 8, runSpacing: 8, children: [['all','All',Icons.devices_rounded], ['android','Android',Icons.phone_android_rounded], ['ios','iOS',Icons.phone_iphone_rounded], ['web','Web',Icons.language_rounded]].map((e) { final v = e[0] as String; final l = e[1] as String; final i = e[2] as IconData; return GestureDetector(
       onTap: () { if (v=='all') { onPlatforms(['all']); } else { final list = List<String>.from(platforms)..remove('all'); list.contains(v) ? list.remove(v) : list.add(v); onPlatforms(list.isEmpty ? ['all'] : list); } },
       child: AnimatedContainer(duration: const Duration(milliseconds: 150), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7), decoration: BoxDecoration(color: platforms.contains(v) ? AppTheme.orange : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(20)), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(i, size: 14, color: platforms.contains(v) ? Colors.white : Colors.grey), const SizedBox(width: 5), Text(l, style: TextStyle(color: platforms.contains(v) ? Colors.white : null, fontWeight: FontWeight.w600, fontSize: 12))]))
     ); }).toList()),
@@ -240,41 +240,66 @@ class _Step3 extends StatelessWidget {
   final void Function(DateTime) onStart; final void Function(DateTime?) onEnd;
   const _Step3({required this.budget, required this.budgetType, required this.bidStrategy, required this.startDate, required this.endDate, required this.dark, required this.onBudget, required this.onType, required this.onBid, required this.onStart, required this.onEnd});
 
-  @override Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(16), children: [
-    const Text('Set your budget', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 22)),
-    const SizedBox(height: 14),
+  Widget _bidItem(String v, String l, String d, String badge) {
+    return GestureDetector(
+      onTap: () => onBid(v),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: bidStrategy == v ? AppTheme.orangeSurf : (dark ? const Color(0xFF1E1E1E) : Colors.white),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: bidStrategy == v ? AppTheme.orange : Colors.transparent),
+        ),
+        child: Row(children: [
+          Radio<String>(value: v, groupValue: bidStrategy, onChanged: (nv) => onBid(nv!), activeColor: AppTheme.orange),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Text(l, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: bidStrategy == v ? AppTheme.orange : null)),
+              if (badge.isNotEmpty) Container(
+                margin: const EdgeInsets.only(left: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(color: Colors.green.withOpacity(0.15), borderRadius: BorderRadius.circular(6)),
+                child: const Text('Recommended', style: TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w700)),
+              ),
+            ]),
+            Text(d, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+          ])),
+        ]),
+      ),
+    );
+  }
 
-    // Budget type
-    Row(children: [('daily','Daily Budget',Icons.calendar_today_rounded), ('lifetime','Lifetime Budget',Icons.calendar_month_rounded)].map((e) { final t = e.$1; final l = e.$2; final i = e.$3; return Expanded(child: GestureDetector(onTap: () => onType(t), child: AnimatedContainer(duration: const Duration(milliseconds: 150), margin: EdgeInsets.only(right: t=='daily' ? 8 : 0), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: budgetType==t ? AppTheme.orangeSurf : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(14), border: Border.all(color: budgetType==t ? AppTheme.orange : Colors.transparent, width: 2)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: budgetType==t ? AppTheme.orange : Colors.grey, size: 22), const SizedBox(height: 6), Text(l, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: budgetType==t ? AppTheme.orange : null))])))); }).toList()),
-    const SizedBox(height: 16),
-
-    // Big budget display
-    Container(padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: dark ? const Color(0xFF1E1E1E) : Colors.white, borderRadius: BorderRadius.circular(16)), child: Column(children: [
-      Row(mainAxisAlignment: MainAxisAlignment.center, children: [const Text('\$', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 28, color: AppTheme.orange)), Text(budget.toStringAsFixed(2), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 52, color: AppTheme.orange)), Text(budgetType == 'daily' ? '/day' : ' total', style: const TextStyle(color: Colors.grey, fontSize: 16))]),
-      Slider(value: budget, min: 1, max: 500, divisions: 499, activeColor: AppTheme.orange, onChanged: (v) => onBudget(double.parse(v.toStringAsFixed(2)))),
-      // Quick amounts
-      Wrap(spacing: 8, children: [1.0,5.0,10.0,25.0,50.0,100.0].map((a) => GestureDetector(onTap: () => onBudget(a), child: AnimatedContainer(duration: const Duration(milliseconds: 150), padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7), decoration: BoxDecoration(color: budget==a ? AppTheme.orange : (dark ? AppTheme.dCard : Colors.grey.shade100), borderRadius: BorderRadius.circular(16)), child: Text('\$${a.toInt()}', style: TextStyle(color: budget==a ? Colors.white : null, fontWeight: FontWeight.w700))))).toList()),
-    ])),
-    const SizedBox(height: 14),
-
-    // Estimate
-    Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: dark ? const Color(0xFF1E1E1E) : Colors.white, borderRadius: BorderRadius.circular(14)), child: Column(children: [
-      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Est. Daily Reach', style: TextStyle(fontSize: 13)), Text('${_fmt((budget*300).round())} – ${_fmt((budget*800).round())} people', style: const TextStyle(color: AppTheme.orange, fontWeight: FontWeight.w600))]),
-      const SizedBox(height: 6),
-      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Est. Impressions/Day', style: TextStyle(fontSize: 13)), Text('${_fmt((budget*1000).round())} – ${_fmt((budget*3000).round())}', style: const TextStyle(color: AppTheme.orange, fontWeight: FontWeight.w600))]),
-    ])),
-    const SizedBox(height: 14),
-
-    // Bid strategy
-    _Label('Bid Strategy'),
-    ...[('lowest_cost','Lowest Cost','Recommended — get the most results','✓'), ('target_cost','Target Cost','Control average cost',''), ('manual_bid','Manual Bid','Set your maximum bid','')].map((e) { final v = e.$1; final l = e.$2; final d = e.$3; final badge = e.$4; return GestureDetector(onTap: () => onBid(v), child: Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: bidStrategy==v ? AppTheme.orangeSurf : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(12), border: Border.all(color: bidStrategy==v ? AppTheme.orange : Colors.transparent)), child: Row(children: [Radio<String>(value: v, groupValue: bidStrategy, onChanged: (nv) => onBid(nv!), activeColor: AppTheme.orange), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: [Text(l, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: bidStrategy==v ? AppTheme.orange : null)), if (badge.isNotEmpty) Container(margin: const EdgeInsets.only(left: 8), padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2), decoration: BoxDecoration(color: Colors.green.withOpacity(0.15), borderRadius: BorderRadius.circular(6)), child: const Text('Recommended', style: TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w700)))]), Text(d, style: const TextStyle(fontSize: 11, color: Colors.grey))]))])))); }).toList(),
-    const SizedBox(height: 14),
-
-    _Label('Schedule'),
-    _DatePick('Start Date *', startDate, () async { final d = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime.now().add(const Duration(days: 365))); if (d != null) onStart(d); }, dark),
-    const SizedBox(height: 8),
-    _DatePick(endDate != null ? 'End: ${endDate!.toString().split(' ')[0]}' : 'No End Date', endDate, () async { final d = await showDatePicker(context: context, initialDate: startDate.add(const Duration(days: 7)), firstDate: startDate.add(const Duration(days: 1)), lastDate: DateTime.now().add(const Duration(days: 365))); onEnd(d); }, dark),
-  ]);
+  @override
+  Widget build(BuildContext context) {
+    return ListView(padding: const EdgeInsets.all(16), children: [
+      const Text('Set your budget', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 22)),
+      const SizedBox(height: 14),
+      Row(children: [['daily','Daily Budget',Icons.calendar_today_rounded], ['lifetime','Lifetime Budget',Icons.calendar_month_rounded]].map((e) { final t = e[0] as String; final l = e[1] as String; final i = e[2] as IconData; return Expanded(child: GestureDetector(onTap: () => onType(t), child: AnimatedContainer(duration: const Duration(milliseconds: 150), margin: EdgeInsets.only(right: t=='daily' ? 8 : 0), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: budgetType==t ? AppTheme.orangeSurf : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(14), border: Border.all(color: budgetType==t ? AppTheme.orange : Colors.transparent, width: 2)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: budgetType==t ? AppTheme.orange : Colors.grey, size: 22), const SizedBox(height: 6), Text(l, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: budgetType==t ? AppTheme.orange : null))])))); }).toList()),
+      const SizedBox(height: 16),
+      Container(padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: dark ? const Color(0xFF1E1E1E) : Colors.white, borderRadius: BorderRadius.circular(16)), child: Column(children: [
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: [const Text('\$', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 28, color: AppTheme.orange)), Text(budget.toStringAsFixed(2), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 52, color: AppTheme.orange)), Text(budgetType == 'daily' ? '/day' : ' total', style: const TextStyle(color: Colors.grey, fontSize: 16))]),
+        Slider(value: budget, min: 1, max: 500, divisions: 499, activeColor: AppTheme.orange, onChanged: (v) => onBudget(double.parse(v.toStringAsFixed(2)))),
+        Wrap(spacing: 8, children: [1.0,5.0,10.0,25.0,50.0,100.0].map((a) => GestureDetector(onTap: () => onBudget(a), child: AnimatedContainer(duration: const Duration(milliseconds: 150), padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7), decoration: BoxDecoration(color: budget==a ? AppTheme.orange : (dark ? AppTheme.dCard : Colors.grey.shade100), borderRadius: BorderRadius.circular(16)), child: Text('\$${a.toInt()}', style: TextStyle(color: budget==a ? Colors.white : null, fontWeight: FontWeight.w700))))).toList()),
+      ])),
+      const SizedBox(height: 14),
+      Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: dark ? const Color(0xFF1E1E1E) : Colors.white, borderRadius: BorderRadius.circular(14)), child: Column(children: [
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Est. Daily Reach', style: TextStyle(fontSize: 13)), Text('${_fmt((budget*300).round())} – ${_fmt((budget*800).round())} people', style: const TextStyle(color: AppTheme.orange, fontWeight: FontWeight.w600))]),
+        const SizedBox(height: 6),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Est. Impressions/Day', style: TextStyle(fontSize: 13)), Text('${_fmt((budget*1000).round())} – ${_fmt((budget*3000).round())}', style: const TextStyle(color: AppTheme.orange, fontWeight: FontWeight.w600))]),
+      ])),
+      const SizedBox(height: 14),
+      _Label('Bid Strategy'),
+      _bidItem('lowest_cost', 'Lowest Cost', 'Recommended — get the most results', 'Recommended'),
+      _bidItem('target_cost', 'Target Cost', 'Control average cost', ''),
+      _bidItem('manual_bid', 'Manual Bid', 'Set your maximum bid', ''),
+      const SizedBox(height: 14),
+      _Label('Schedule'),
+      _DatePick('Start Date *', startDate, () async { final d = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime.now().add(const Duration(days: 365))); if (d != null) onStart(d); }, dark),
+      const SizedBox(height: 8),
+      _DatePick(endDate != null ? 'End: ${endDate!.toString().split(' ')[0]}' : 'No End Date', endDate, () async { final d = await showDatePicker(context: context, initialDate: startDate.add(const Duration(days: 7)), firstDate: startDate.add(const Duration(days: 1)), lastDate: DateTime.now().add(const Duration(days: 365))); onEnd(d); }, dark),
+    ]);
+  }
 
   static String _fmt(int n) => n >= 1000 ? '${(n/1000).toStringAsFixed(0)}K' : '$n';
 }
@@ -283,7 +308,7 @@ class _Step3 extends StatelessWidget {
 class _Step4 extends StatelessWidget {
   final String format, headline, primaryText, ctaText, ctaUrl, displayUrl;
   final File? mediaFile;
-  final List<(String,IconData,String,String)> formats;
+  final List<List<dynamic>> formats;
   final List<String> ctaOptions;
   final bool dark;
   final void Function(String) onFormat, onHeadline, onPrimary, onCta, onUrl, onDisplayUrl;
@@ -296,7 +321,7 @@ class _Step4 extends StatelessWidget {
     const SizedBox(height: 14),
 
     _Label('Format'),
-    SizedBox(height: 88, child: ListView(scrollDirection: Axis.horizontal, children: formats.map((e) { final id = e.$1; final icon = e.$2; final name = e.$3; return GestureDetector(onTap: () => onFormat(id), child: AnimatedContainer(duration: const Duration(milliseconds: 150), margin: const EdgeInsets.only(right: 10), width: 90, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: format==id ? AppTheme.orange : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(14), border: Border.all(color: format==id ? AppTheme.orange : Colors.transparent, width: 2)), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, color: format==id ? Colors.white : AppTheme.orange, size: 24), const SizedBox(height: 5), Text(name, style: TextStyle(color: format==id ? Colors.white : null, fontWeight: FontWeight.w700, fontSize: 12), textAlign: TextAlign.center)]))); }).toList())),
+    SizedBox(height: 88, child: ListView(scrollDirection: Axis.horizontal, children: formats.map((e) { final id = e[0] as String; final icon = e[1] as IconData; final name = e[2] as String; return GestureDetector(onTap: () => onFormat(id), child: AnimatedContainer(duration: const Duration(milliseconds: 150), margin: const EdgeInsets.only(right: 10), width: 90, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: format==id ? AppTheme.orange : (dark ? const Color(0xFF1E1E1E) : Colors.white), borderRadius: BorderRadius.circular(14), border: Border.all(color: format==id ? AppTheme.orange : Colors.transparent, width: 2)), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, color: format==id ? Colors.white : AppTheme.orange, size: 24), const SizedBox(height: 5), Text(name, style: TextStyle(color: format==id ? Colors.white : null, fontWeight: FontWeight.w700, fontSize: 12), textAlign: TextAlign.center)]))); }).toList())),
     const SizedBox(height: 14),
 
     _Label('Media'),

@@ -1,0 +1,1 @@
+ /home/runner/workspace/frontend/build/web/manifest.json:  /home/runner/workspace/frontend/web/index.html /home/runner/workspace/frontend/web/manifest.json

@@ -48,7 +48,22 @@ const io     = socketIO(server, {
 });
 
 // ── Middleware
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'", 'https:', 'data:', 'blob:'],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://www.gstatic.com', 'https://cdn.jsdelivr.net'],
+      scriptSrcElem: ["'self'", "'unsafe-inline'", 'https://www.gstatic.com', 'https://cdn.jsdelivr.net'],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+      imgSrc: ["'self'", 'https:', 'data:', 'blob:'],
+      connectSrc: ["'self'", 'https:', 'wss:', 'ws:', 'blob:'],
+      mediaSrc: ["'self'", 'https:', 'blob:'],
+      workerSrc: ["'self'", 'blob:'],
+    },
+  },
+}));
 app.use(compression());
 app.use(cors({ origin: '*', credentials: true, methods: ['GET','POST','PUT','DELETE','PATCH','OPTIONS'] }));
 app.use(process.env.NODE_ENV === 'production' ? morgan('combined') : morgan('dev'));
@@ -69,8 +84,21 @@ app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/app', express.static(path.join(__dirname, '..', 'frontend', 'web')));
+
+// Serve Flutter web with no-cache for critical bootstrap files
+const flutterWebDir = path.join(__dirname, '..', 'frontend', 'web');
+const noCache = (_, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  next();
+};
+app.get('/flutter_bootstrap.js', noCache, (req, res) => res.sendFile(path.join(flutterWebDir, 'flutter_bootstrap.js')));
+app.get('/index.html', noCache, (req, res) => res.sendFile(path.join(flutterWebDir, 'index.html')));
+app.get('/flutter_service_worker.js', noCache, (req, res) => res.sendFile(path.join(flutterWebDir, 'flutter_service_worker.js')));
+app.use('/app', express.static(flutterWebDir, { maxAge: 0 }));
+app.use(express.static(flutterWebDir, { maxAge: 0 }));
 app.use(express.static(path.join(__dirname, 'public')));
+// Root serves the Flutter app directly
 
 // ── Inject io into every request
 app.use((req, _, next) => { req.io = io; next(); });

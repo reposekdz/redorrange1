@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base href="$FLUTTER_BASE_HREF">
+  <base href="/">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#FF6B35">
@@ -65,11 +65,11 @@
       }
     };
 
-    // Register service worker for offline + background sync
+    // Unregister any stale service workers to force fresh load
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/flutter_service_worker.js')
-        .then(reg => console.log('[SW] Registered'))
-        .catch(e  => console.log('[SW] Failed:', e));
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(reg => reg.unregister());
+      });
     }
 
     window.addEventListener('flutter-first-frame', () => {
