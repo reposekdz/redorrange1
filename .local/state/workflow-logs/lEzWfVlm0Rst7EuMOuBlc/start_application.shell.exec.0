@@ -1,0 +1,17 @@
+/home/runner/workspace/backend/src/services/recommendationEngine.js:272
+    ),
+     ^
+
+SyntaxError: Unexpected token ','
+[90m    at wrapSafe (node:internal/modules/cjs/loader:1464:18)[39m
+[90m    at Module._compile (node:internal/modules/cjs/loader:1495:20)[39m
+[90m    at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)[39m
+[90m    at Module.load (node:internal/modules/cjs/loader:1266:32)[39m
+[90m    at Module._load (node:internal/modules/cjs/loader:1091:12)[39m
+[90m    at Module.require (node:internal/modules/cjs/loader:1289:19)[39m
+[90m    at require (node:internal/modules/helpers:182:18)[39m
+    at Object.<anonymous> [90m(/home/runner/workspace/backend/[39msrc/controllers/postsController.js:1:13[90m)[39m
+[90m    at Module._compile (node:internal/modules/cjs/loader:1521:14)[39m
+[90m    at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)[39m
+
+Node.js v20.20.0

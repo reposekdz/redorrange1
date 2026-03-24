@@ -1,0 +1,19 @@
+
+╔══════════════════════════════════════╗
+║  🔴 RedOrrange API v2.0  :5000    ║
+║  🛠️  Development Mode              ║
+╚══════════════════════════════════════╝
+[DB] ✅ Connected
+[0mGET / [32m200[0m 4.713 ms - -[0m
+[0mGET /flutter_bootstrap.js [32m200[0m 3.097 ms - -[0m
+[0mGET /favicon.ico [33m404[0m 2.638 ms - 45[0m
+[0mGET /flutter_service_worker.js?v=19134747 [32m200[0m 5.150 ms - -[0m
+[0mGET /index.html [32m200[0m 1.453 ms - -[0m
+[0mGET /flutter_bootstrap.js [32m200[0m 1.524 ms - -[0m
+[0mGET /assets/FontManifest.json [32m200[0m 0.919 ms - 333[0m
+[0mGET /assets/AssetManifest.bin.json [32m200[0m 2.643 ms - -[0m
+[0mGET /main.dart.js [32m200[0m 4.823 ms - -[0m
+[0mGET / [36m304[0m 1.257 ms - -[0m
+[0mGET /assets/packages/cupertino_icons/assets/CupertinoIcons.ttf [32m200[0m 1.836 ms - -[0m
+[0mGET /assets/packages/iconsax_flutter/fonts/FlutterIconsax.ttf [32m200[0m 3.449 ms - -[0m
+[0mGET /assets/fonts/MaterialIcons-Regular.otf [32m200[0m 4.043 ms - -[0m

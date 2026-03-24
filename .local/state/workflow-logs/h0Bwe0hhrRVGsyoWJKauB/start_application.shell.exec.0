@@ -1,0 +1,17 @@
+/home/runner/workspace/backend/src/routes/monetization.js:88
+      'INSERT INTO user_subscriptions (id,user_id,plan_id,status,provider,provider_subscription_id,current_period_start,current_period_end) VALUES (?,?,?,?,?,?,NOW(),NOW() + INTERVAL '30 day')',
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+SyntaxError: missing ) after argument list
+[90m    at wrapSafe (node:internal/modules/cjs/loader:1464:18)[39m
+[90m    at Module._compile (node:internal/modules/cjs/loader:1495:20)[39m
+[90m    at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)[39m
+[90m    at Module.load (node:internal/modules/cjs/loader:1266:32)[39m
+[90m    at Module._load (node:internal/modules/cjs/loader:1091:12)[39m
+[90m    at Module.require (node:internal/modules/cjs/loader:1289:19)[39m
+[90m    at require (node:internal/modules/helpers:182:18)[39m
+    at Object.<anonymous> [90m(/home/runner/workspace/backend/[39mserver.js:34:28[90m)[39m
+[90m    at Module._compile (node:internal/modules/cjs/loader:1521:14)[39m
+[90m    at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)[39m
+
+Node.js v20.20.0
